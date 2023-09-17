@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="XXLChess.AppTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-12T07:20:08" hostname="LAPTOP-47OPA4MS" time="103.605">
+  <properties/>
+  <testcase name="setupTest()" classname="XXLChess.AppTest" time="103.605"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[java.lang.NullPointerException
+	at processing.awt.PGraphicsJava2D.imageImpl(PGraphicsJava2D.java:1574)
+	at processing.core.PGraphics.image(PGraphics.java:3817)
+	at processing.core.PGraphics.image(PGraphics.java:3791)
+	at processing.core.PApplet.image(PApplet.java:12621)
+	at XXLChess.App.drawPieces(App.java:816)
+	at XXLChess.App.draw(App.java:648)
+	at processing.core.PApplet.handleDraw(PApplet.java:2426)
+	at processing.awt.PSurfaceAWT$12.callDraw(PSurfaceAWT.java:1557)
+	at processing.core.PSurfaceNone$AnimationThread.run(PSurfaceNone.java:316)
+]]></system-err>
+</testsuite>

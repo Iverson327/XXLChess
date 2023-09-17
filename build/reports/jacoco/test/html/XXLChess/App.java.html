@@ -1,0 +1,1513 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">xxlchess_scaffold</a> &gt; <a href="index.source.html" class="el_package">XXLChess</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package XXLChess;
+
+//import org.reflections.Reflections;
+//import org.reflections.scanners.Scanners;
+import processing.core.PApplet;
+import processing.core.PImage;
+import processing.data.JSONObject;
+import processing.data.JSONArray;
+import processing.core.PFont;
+import processing.event.MouseEvent;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import java.awt.Font;
+import java.io.*;
+import java.util.*;
+import java.lang.Math;
+
+public class App extends PApplet {
+
+<span class="fc" id="L22">    public final int SPRITESIZE = 480;</span>
+<span class="fc" id="L23">    public final int CELLSIZE = 48;</span>
+<span class="fc" id="L24">    public final int SIDEBAR = 120;</span>
+<span class="fc" id="L25">    public final int BOARD_WIDTH = 14;</span>
+
+<span class="fc" id="L27">    public int WIDTH = CELLSIZE*BOARD_WIDTH+SIDEBAR;</span>
+<span class="fc" id="L28">    public int HEIGHT = BOARD_WIDTH*CELLSIZE;</span>
+
+<span class="fc" id="L30">    public final int FPS = 60;</span>
+	
+    public String configPath;
+    
+<span class="fc" id="L34">    public HashMap&lt;Character, PImage&gt; pieces = new HashMap&lt;Character, PImage&gt;();</span>
+<span class="fc" id="L35">    public HashMap&lt;Character, Piece&gt; pieceCode = new HashMap&lt;Character, Piece&gt;();</span>
+<span class="fc" id="L36">    public HashMap&lt;Character, int[][]&gt; pieceMoves= new HashMap&lt;Character, int[][]&gt;();</span>
+<span class="fc" id="L37">    public char[][] board = new char[14][14];</span>
+
+    public int player1Time, player2Time;
+    public int player1Increment, player2Increment;
+<span class="fc" id="L41">    public int frameCount = 0;</span>
+    public String playerColour;
+
+<span class="fc" id="L44">    public WhitePawn WhitePawn = new WhitePawn();</span>
+<span class="fc" id="L45">    public BlackPawn BlackPawn = new BlackPawn();</span>
+<span class="fc" id="L46">    public Camel Camel = new Camel();</span>
+<span class="fc" id="L47">    public Chancellor Chancellor = new Chancellor();</span>
+<span class="fc" id="L48">    public Amazon Amazon = new Amazon();</span>
+<span class="fc" id="L49">    public Archbishop Archbishop = new Archbishop();</span>
+<span class="fc" id="L50">    public Rook Rook = new Rook();</span>
+<span class="fc" id="L51">    public Bishop Bishop = new Bishop();</span>
+<span class="fc" id="L52">    public Queen Queen = new Queen();</span>
+<span class="fc" id="L53">    public Guard Guard = new Guard();</span>
+<span class="fc" id="L54">    public Knight Knight = new Knight();</span>
+<span class="fc" id="L55">    public King King = new King();</span>
+
+<span class="fc" id="L57">    public int rowChosen = -1;</span>
+<span class="fc" id="L58">    public int colChosen = -1;</span>
+<span class="fc" id="L59">    public int lastRow = -1;</span>
+<span class="fc" id="L60">    public int lastCol = -1;</span>
+<span class="fc" id="L61">    public int lastPieceRow = -1;</span>
+<span class="fc" id="L62">    public int lastPieceCol = -1;</span>
+<span class="fc" id="L63">    public boolean pieceSelected = false;</span>
+<span class="fc" id="L64">    public boolean moved = false;</span>
+<span class="fc" id="L65">    public boolean player1Turn = true;</span>
+<span class="fc" id="L66">    public boolean ended = false;</span>
+<span class="fc" id="L67">    public boolean wKingMoved = false;</span>
+<span class="fc" id="L68">    public boolean wLRookMoved = false;</span>
+<span class="fc" id="L69">    public boolean wRRookMoved = false;</span>
+<span class="fc" id="L70">    public boolean bKingMoved = false;</span>
+<span class="fc" id="L71">    public boolean bLRookMoved = false;</span>
+<span class="fc" id="L72">    public boolean bRRookMoved = false;</span>
+<span class="fc" id="L73">    public boolean autoOn = false;</span>
+<span class="fc" id="L74">    public boolean flash = false;</span>
+<span class="fc" id="L75">    public int flashCount = 0;</span>
+    public int[][] path;
+<span class="fc" id="L77">    public ArrayList&lt;Character&gt; movables = new ArrayList&lt;Character&gt;();</span>
+<span class="fc" id="L78">    public Random pick = new Random();</span>
+
+<span class="fc" id="L80">    public App() {</span>
+<span class="fc" id="L81">        this.configPath = &quot;config.json&quot;;</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Initialise the setting of the window size.
+    */
+    public void settings() {
+<span class="fc" id="L88">        size(WIDTH, HEIGHT);</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Load all resources such as images. Initialise the elements such as the player, enemies and map elements.
+    */
+
+    public void setup() {
+<span class="fc" id="L96">        frameRate(FPS);</span>
+<span class="fc" id="L97">        noStroke();</span>
+        
+        // load config
+<span class="fc" id="L100">        JSONObject config = loadJSONObject(new File(this.configPath));</span>
+<span class="fc" id="L101">        JSONObject time = config.getJSONObject(&quot;time_controls&quot;);</span>
+<span class="fc" id="L102">        player1Time = time.getJSONObject(&quot;player&quot;).getInt(&quot;seconds&quot;);</span>
+<span class="fc" id="L103">        player2Time = time.getJSONObject(&quot;cpu&quot;).getInt(&quot;seconds&quot;);</span>
+<span class="fc" id="L104">        player1Increment = time.getJSONObject(&quot;player&quot;).getInt(&quot;increment&quot;);</span>
+<span class="fc" id="L105">        player2Increment = time.getJSONObject(&quot;cpu&quot;).getInt(&quot;increment&quot;);</span>
+<span class="fc" id="L106">        playerColour = config.getString(&quot;player_colour&quot;);</span>
+
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        if(playerColour.equals(&quot;white&quot;)){</span>
+<span class="fc" id="L109">          PImage wCamel = loadImage(Camel.wImage);</span>
+<span class="fc" id="L110">          wCamel.resize(48, 48);</span>
+<span class="fc" id="L111">          this.pieces.put('c', wCamel);</span>
+<span class="fc" id="L112">          this.pieceCode.put('c', Camel);</span>
+<span class="fc" id="L113">          PImage bCamel = loadImage(Camel.bImage);</span>
+<span class="fc" id="L114">          bCamel.resize(48, 48);</span>
+<span class="fc" id="L115">          this.pieces.put('C', bCamel);</span>
+<span class="fc" id="L116">          this.pieceCode.put('C', Camel);</span>
+
+<span class="fc" id="L118">          PImage wRook = loadImage(Rook.wImage);</span>
+<span class="fc" id="L119">          wRook.resize(48, 48);</span>
+<span class="fc" id="L120">          this.pieces.put('r', wRook);</span>
+<span class="fc" id="L121">          this.pieceCode.put('r', Rook);</span>
+<span class="fc" id="L122">          PImage bRook = loadImage(Rook.bImage);</span>
+<span class="fc" id="L123">          bRook.resize(48, 48);</span>
+<span class="fc" id="L124">          this.pieces.put('R', bRook);</span>
+<span class="fc" id="L125">          this.pieceCode.put('R', Rook);</span>
+
+<span class="fc" id="L127">          PImage wAmazon = loadImage(Amazon.wImage);</span>
+<span class="fc" id="L128">          wAmazon.resize(48, 48);</span>
+<span class="fc" id="L129">          this.pieces.put('a', wAmazon);</span>
+<span class="fc" id="L130">          this.pieceCode.put('a', Amazon);</span>
+<span class="fc" id="L131">          PImage bAmazon = loadImage(Amazon.bImage);</span>
+<span class="fc" id="L132">          bAmazon.resize(48, 48);</span>
+<span class="fc" id="L133">          this.pieces.put('A', bAmazon);</span>
+<span class="fc" id="L134">          this.pieceCode.put('A', Amazon);</span>
+
+<span class="fc" id="L136">          PImage wArchbishop = loadImage(Archbishop.wImage);</span>
+<span class="fc" id="L137">          wArchbishop.resize(48, 48);</span>
+<span class="fc" id="L138">          this.pieces.put('h', wArchbishop);</span>
+<span class="fc" id="L139">          this.pieceCode.put('h', Archbishop);</span>
+<span class="fc" id="L140">          PImage bArchbishop = loadImage(Archbishop.bImage);</span>
+<span class="fc" id="L141">          bArchbishop.resize(48, 48);</span>
+<span class="fc" id="L142">          this.pieces.put('H', bArchbishop);</span>
+<span class="fc" id="L143">          this.pieceCode.put('H', Archbishop);</span>
+
+<span class="fc" id="L145">          PImage wBishop = loadImage(Bishop.wImage);</span>
+<span class="fc" id="L146">          wBishop.resize(48, 48);</span>
+<span class="fc" id="L147">          this.pieces.put('b', wBishop);</span>
+<span class="fc" id="L148">          this.pieceCode.put('b', Bishop);</span>
+<span class="fc" id="L149">          PImage bBishop = loadImage(Bishop.bImage);</span>
+<span class="fc" id="L150">          bBishop.resize(48, 48);</span>
+<span class="fc" id="L151">          this.pieces.put('B', bBishop);</span>
+<span class="fc" id="L152">          this.pieceCode.put('B', Bishop);</span>
+
+<span class="fc" id="L154">          PImage wChancellor = loadImage(Chancellor.wImage);</span>
+<span class="fc" id="L155">          wChancellor.resize(48, 48);</span>
+<span class="fc" id="L156">          this.pieces.put('e', wChancellor);</span>
+<span class="fc" id="L157">          this.pieceCode.put('e', Chancellor);</span>
+<span class="fc" id="L158">          PImage bChancellor = loadImage(Chancellor.bImage);</span>
+<span class="fc" id="L159">          bChancellor.resize(48, 48);</span>
+<span class="fc" id="L160">          this.pieces.put('E', bChancellor);</span>
+<span class="fc" id="L161">          this.pieceCode.put('E', Chancellor);</span>
+
+<span class="fc" id="L163">          PImage wKing = loadImage(King.wImage);</span>
+<span class="fc" id="L164">          wKing.resize(48, 48);</span>
+<span class="fc" id="L165">          this.pieces.put('k', wKing);</span>
+<span class="fc" id="L166">          this.pieceCode.put('k', King);</span>
+<span class="fc" id="L167">          PImage bKing = loadImage(King.bImage);</span>
+<span class="fc" id="L168">          bKing.resize(48, 48);</span>
+<span class="fc" id="L169">          this.pieces.put('K', bKing);</span>
+<span class="fc" id="L170">          this.pieceCode.put('K', King);</span>
+
+<span class="fc" id="L172">          PImage wKnight = loadImage(Knight.wImage);</span>
+<span class="fc" id="L173">          wKnight.resize(48, 48);</span>
+<span class="fc" id="L174">          this.pieces.put('n', wKnight);</span>
+<span class="fc" id="L175">          this.pieceCode.put('n', Knight);</span>
+<span class="fc" id="L176">          PImage bKnight = loadImage(Knight.bImage);</span>
+<span class="fc" id="L177">          bKnight.resize(48, 48);</span>
+<span class="fc" id="L178">          this.pieces.put('N', bKnight);</span>
+<span class="fc" id="L179">          this.pieceCode.put('N', Knight);</span>
+
+<span class="fc" id="L181">          PImage wGuard = loadImage(Guard.wImage);</span>
+<span class="fc" id="L182">          wGuard.resize(48, 48);</span>
+<span class="fc" id="L183">          this.pieces.put('g', wGuard);</span>
+<span class="fc" id="L184">          this.pieceCode.put('g', Guard);</span>
+<span class="fc" id="L185">          PImage bGuard = loadImage(Guard.bImage);</span>
+<span class="fc" id="L186">          bGuard.resize(48, 48);</span>
+<span class="fc" id="L187">          this.pieces.put('G', bGuard);</span>
+<span class="fc" id="L188">          this.pieceCode.put('G', Guard);</span>
+
+<span class="fc" id="L190">          PImage wPawn = loadImage(WhitePawn.wImage);</span>
+<span class="fc" id="L191">          wPawn.resize(48, 48);</span>
+<span class="fc" id="L192">          this.pieces.put('p', wPawn);</span>
+<span class="fc" id="L193">          this.pieceCode.put('p', WhitePawn);</span>
+<span class="fc" id="L194">          PImage bPawn = loadImage(BlackPawn.bImage);</span>
+<span class="fc" id="L195">          bPawn.resize(48, 48);</span>
+<span class="fc" id="L196">          this.pieces.put('P', bPawn);</span>
+<span class="fc" id="L197">          this.pieceCode.put('P', BlackPawn);</span>
+
+<span class="fc" id="L199">          PImage wQueen = loadImage(Queen.wImage);</span>
+<span class="fc" id="L200">          wQueen.resize(48, 48);</span>
+<span class="fc" id="L201">          this.pieces.put('q', wQueen);</span>
+<span class="fc" id="L202">          this.pieceCode.put('q', Queen);</span>
+<span class="fc" id="L203">          PImage bQueen = loadImage(Queen.bImage);</span>
+<span class="fc" id="L204">          bQueen.resize(48, 48);</span>
+<span class="fc" id="L205">          this.pieces.put('Q', bQueen);</span>
+<span class="fc" id="L206">          this.pieceCode.put('Q', Queen);</span>
+<span class="fc" id="L207">        }else{</span>
+<span class="fc" id="L208">          this.player1Turn = false;</span>
+<span class="fc" id="L209">          PImage wCamel = loadImage(Camel.bImage);</span>
+<span class="fc" id="L210">          wCamel.resize(48, 48);</span>
+<span class="fc" id="L211">          this.pieces.put('c', wCamel);</span>
+<span class="fc" id="L212">          this.pieceCode.put('c', Camel);</span>
+<span class="fc" id="L213">          PImage bCamel = loadImage(Camel.wImage);</span>
+<span class="fc" id="L214">          bCamel.resize(48, 48);</span>
+<span class="fc" id="L215">          this.pieces.put('C', bCamel);</span>
+<span class="fc" id="L216">          this.pieceCode.put('C', Camel);</span>
+
+<span class="fc" id="L218">          PImage wRook = loadImage(Rook.bImage);</span>
+<span class="fc" id="L219">          wRook.resize(48, 48);</span>
+<span class="fc" id="L220">          this.pieces.put('r', wRook);</span>
+<span class="fc" id="L221">          this.pieceCode.put('r', Rook);</span>
+<span class="fc" id="L222">          PImage bRook = loadImage(Rook.wImage);</span>
+<span class="fc" id="L223">          bRook.resize(48, 48);</span>
+<span class="fc" id="L224">          this.pieces.put('R', bRook);</span>
+<span class="fc" id="L225">          this.pieceCode.put('R', Rook);</span>
+
+<span class="fc" id="L227">          PImage wAmazon = loadImage(Amazon.bImage);</span>
+<span class="fc" id="L228">          wAmazon.resize(48, 48);</span>
+<span class="fc" id="L229">          this.pieces.put('a', wAmazon);</span>
+<span class="fc" id="L230">          this.pieceCode.put('a', Amazon);</span>
+<span class="fc" id="L231">          PImage bAmazon = loadImage(Amazon.wImage);</span>
+<span class="fc" id="L232">          bAmazon.resize(48, 48);</span>
+<span class="fc" id="L233">          this.pieces.put('A', bAmazon);</span>
+<span class="fc" id="L234">          this.pieceCode.put('A', Amazon);</span>
+
+<span class="fc" id="L236">          PImage wArchbishop = loadImage(Archbishop.bImage);</span>
+<span class="fc" id="L237">          wArchbishop.resize(48, 48);</span>
+<span class="fc" id="L238">          this.pieces.put('h', wArchbishop);</span>
+<span class="fc" id="L239">          this.pieceCode.put('h', Archbishop);</span>
+<span class="fc" id="L240">          PImage bArchbishop = loadImage(Archbishop.wImage);</span>
+<span class="fc" id="L241">          bArchbishop.resize(48, 48);</span>
+<span class="fc" id="L242">          this.pieces.put('H', bArchbishop);</span>
+<span class="fc" id="L243">          this.pieceCode.put('H', Archbishop);</span>
+
+<span class="fc" id="L245">          PImage wBishop = loadImage(Bishop.bImage);</span>
+<span class="fc" id="L246">          wBishop.resize(48, 48);</span>
+<span class="fc" id="L247">          this.pieces.put('b', wBishop);</span>
+<span class="fc" id="L248">          this.pieceCode.put('b', Bishop);</span>
+<span class="fc" id="L249">          PImage bBishop = loadImage(Bishop.wImage);</span>
+<span class="fc" id="L250">          bBishop.resize(48, 48);</span>
+<span class="fc" id="L251">          this.pieces.put('B', bBishop);</span>
+<span class="fc" id="L252">          this.pieceCode.put('B', Bishop);</span>
+
+<span class="fc" id="L254">          PImage wChancellor = loadImage(Chancellor.bImage);</span>
+<span class="fc" id="L255">          wChancellor.resize(48, 48);</span>
+<span class="fc" id="L256">          this.pieces.put('e', wChancellor);</span>
+<span class="fc" id="L257">          this.pieceCode.put('e', Chancellor);</span>
+<span class="fc" id="L258">          PImage bChancellor = loadImage(Chancellor.wImage);</span>
+<span class="fc" id="L259">          bChancellor.resize(48, 48);</span>
+<span class="fc" id="L260">          this.pieces.put('E', bChancellor);</span>
+<span class="fc" id="L261">          this.pieceCode.put('E', Chancellor);</span>
+
+<span class="fc" id="L263">          PImage wKing = loadImage(King.bImage);</span>
+<span class="fc" id="L264">          wKing.resize(48, 48);</span>
+<span class="fc" id="L265">          this.pieces.put('k', wKing);</span>
+<span class="fc" id="L266">          this.pieceCode.put('k', King);</span>
+<span class="fc" id="L267">          PImage bKing = loadImage(King.wImage);</span>
+<span class="fc" id="L268">          bKing.resize(48, 48);</span>
+<span class="fc" id="L269">          this.pieces.put('K', bKing);</span>
+<span class="fc" id="L270">          this.pieceCode.put('K', King);</span>
+
+<span class="fc" id="L272">          PImage wKnight = loadImage(Knight.bImage);</span>
+<span class="fc" id="L273">          wKnight.resize(48, 48);</span>
+<span class="fc" id="L274">          this.pieces.put('n', wKnight);</span>
+<span class="fc" id="L275">          this.pieceCode.put('n', Knight);</span>
+<span class="fc" id="L276">          PImage bKnight = loadImage(Knight.wImage);</span>
+<span class="fc" id="L277">          bKnight.resize(48, 48);</span>
+<span class="fc" id="L278">          this.pieces.put('N', bKnight);</span>
+<span class="fc" id="L279">          this.pieceCode.put('N', Knight);</span>
+
+<span class="fc" id="L281">          PImage wGuard = loadImage(Guard.bImage);</span>
+<span class="fc" id="L282">          wGuard.resize(48, 48);</span>
+<span class="fc" id="L283">          this.pieces.put('g', wGuard);</span>
+<span class="fc" id="L284">          this.pieceCode.put('g', Guard);</span>
+<span class="fc" id="L285">          PImage bGuard = loadImage(Guard.wImage);</span>
+<span class="fc" id="L286">          bGuard.resize(48, 48);</span>
+<span class="fc" id="L287">          this.pieces.put('G', bGuard);</span>
+<span class="fc" id="L288">          this.pieceCode.put('G', Guard);</span>
+
+<span class="fc" id="L290">          PImage wPawn = loadImage(WhitePawn.bImage);</span>
+<span class="fc" id="L291">          wPawn.resize(48, 48);</span>
+<span class="fc" id="L292">          this.pieces.put('p', wPawn);</span>
+<span class="fc" id="L293">          this.pieceCode.put('p', WhitePawn);</span>
+<span class="fc" id="L294">          PImage bPawn = loadImage(BlackPawn.wImage);</span>
+<span class="fc" id="L295">          bPawn.resize(48, 48);</span>
+<span class="fc" id="L296">          this.pieces.put('P', bPawn);</span>
+<span class="fc" id="L297">          this.pieceCode.put('P', BlackPawn);</span>
+
+<span class="fc" id="L299">          PImage wQueen = loadImage(Queen.bImage);</span>
+<span class="fc" id="L300">          wQueen.resize(48, 48);</span>
+<span class="fc" id="L301">          this.pieces.put('q', wQueen);</span>
+<span class="fc" id="L302">          this.pieceCode.put('q', Queen);</span>
+<span class="fc" id="L303">          PImage bQueen = loadImage(Queen.wImage);</span>
+<span class="fc" id="L304">          bQueen.resize(48, 48);</span>
+<span class="fc" id="L305">          this.pieces.put('Q', bQueen);</span>
+<span class="fc" id="L306">          this.pieceCode.put('Q', Queen);</span>
+        }
+
+<span class="fc" id="L309">        String[] lines = loadStrings(config.getString(&quot;layout&quot;));</span>
+<span class="fc bfc" id="L310" title="All 2 branches covered.">        for (int i = 0; i &lt; lines.length; i++) {</span>
+<span class="fc" id="L311">          String line = lines[i];</span>
+<span class="fc bfc" id="L312" title="All 2 branches covered.">          for (int j = 0; j &lt; 14; j++) {</span>
+<span class="fc bfc" id="L313" title="All 2 branches covered.">            if(line.length() == 14){</span>
+<span class="fc" id="L314">              this.board[i][j] = line.charAt(j);</span>
+            }else{
+<span class="fc" id="L316">              this.board[i][j] = ' ';</span>
+            }
+          }
+        }
+<span class="fc" id="L320">    }</span>
+
+    /**
+     * Receive key pressed signal from the keyboard.
+    */
+    public void keyPressed(){
+<span class="fc bfc" id="L326" title="All 4 branches covered.">        if(key == 'r' &amp;&amp; ended){</span>
+<span class="fc" id="L327">          this.moved = false;</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">          if(playerColour.equals(&quot;white&quot;)){</span>
+<span class="fc" id="L329">            this.player1Turn = true;</span>
+          }else{
+<span class="fc" id="L331">            this.player1Turn = false;</span>
+          }
+<span class="fc" id="L333">          this.pieceSelected = false;</span>
+<span class="fc" id="L334">          this.ended = false;</span>
+<span class="fc" id="L335">          this.rowChosen = -1;</span>
+<span class="fc" id="L336">          this.colChosen = -1;</span>
+<span class="fc" id="L337">          this.lastRow = -1;</span>
+<span class="fc" id="L338">          this.lastCol = -1;</span>
+<span class="fc" id="L339">          this.lastPieceRow = -1;</span>
+<span class="fc" id="L340">          this.lastPieceCol = -1;</span>
+<span class="fc" id="L341">          this.wKingMoved = false;</span>
+<span class="fc" id="L342">          this.wLRookMoved = false;</span>
+<span class="fc" id="L343">          this.wRRookMoved = false;</span>
+<span class="fc" id="L344">          this.bKingMoved = false;</span>
+<span class="fc" id="L345">          this.bLRookMoved = false;</span>
+<span class="fc" id="L346">          this.bRRookMoved = false;</span>
+<span class="fc" id="L347">          this.autoOn = false;</span>
+<span class="fc" id="L348">          this.frameCount = 0;</span>
+<span class="fc" id="L349">          this.path = null;</span>
+<span class="fc" id="L350">          this.flash = false;</span>
+<span class="fc" id="L351">          this.flashCount = 0;</span>
+
+<span class="fc" id="L353">          JSONObject config = loadJSONObject(new File(this.configPath));</span>
+<span class="fc" id="L354">          JSONObject time = config.getJSONObject(&quot;time_controls&quot;);</span>
+<span class="fc" id="L355">          player1Time = time.getJSONObject(&quot;player&quot;).getInt(&quot;seconds&quot;);</span>
+<span class="fc" id="L356">          player2Time = time.getJSONObject(&quot;cpu&quot;).getInt(&quot;seconds&quot;);</span>
+
+<span class="fc" id="L358">          String[] lines = loadStrings(config.getString(&quot;layout&quot;));</span>
+<span class="fc bfc" id="L359" title="All 2 branches covered.">          for (int i = 0; i &lt; lines.length; i++) {</span>
+<span class="fc" id="L360">            String line = lines[i];</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">            for (int j = 0; j &lt; 14; j++) {</span>
+<span class="fc bfc" id="L362" title="All 2 branches covered.">              if(line.length() == 14){</span>
+<span class="fc" id="L363">                this.board[i][j] = line.charAt(j);</span>
+              }else{
+<span class="fc" id="L365">                this.board[i][j] = ' ';</span>
+              }
+            }
+          }
+        }
+
+<span class="pc bpc" id="L371" title="1 of 6 branches missed.">        if((key == ESC || key == 'e')&amp;&amp; !ended){</span>
+<span class="fc" id="L372">          key = 0;</span>
+<span class="fc" id="L373">          fill(168, 168, 168);</span>
+<span class="fc" id="L374">          rect(690, 325, 50, 16);</span>
+<span class="fc bfc" id="L375" title="All 2 branches covered.">          if(player1Turn){</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">            if(autoOn){</span>
+<span class="fc" id="L377">              textSize(15);</span>
+<span class="fc" id="L378">              fill(255, 255, 255);</span>
+<span class="fc" id="L379">              text(&quot;You resigned&quot;, 680, 320);</span>
+<span class="fc" id="L380">              textSize(11);</span>
+<span class="fc" id="L381">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }else{
+<span class="fc" id="L383">              textSize(15);</span>
+<span class="fc" id="L384">              fill(255, 255, 255);</span>
+<span class="fc bfc" id="L385" title="All 2 branches covered.">              if(playerColour.equals(&quot;white&quot;)){</span>
+<span class="fc" id="L386">                text(&quot;White resigned&quot;, 680, 320);</span>
+              }else{
+<span class="fc" id="L388">                text(&quot;Black resigned&quot;, 680, 320);</span>
+              }
+<span class="fc" id="L390">              textSize(11);</span>
+<span class="fc" id="L391">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }
+          }else{
+<span class="fc bfc" id="L394" title="All 2 branches covered.">            if(autoOn){</span>
+<span class="fc" id="L395">              textSize(15);</span>
+<span class="fc" id="L396">              fill(255, 255, 255);</span>
+<span class="fc" id="L397">              text(&quot;You resigned&quot;, 680, 320);</span>
+<span class="fc" id="L398">              textSize(11);</span>
+<span class="fc" id="L399">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }else{
+<span class="fc" id="L401">              textSize(15);</span>
+<span class="fc" id="L402">              fill(255, 255, 255);</span>
+<span class="fc bfc" id="L403" title="All 2 branches covered.">              if(playerColour.equals(&quot;white&quot;)){</span>
+<span class="fc" id="L404">                text(&quot;Black resigned&quot;, 680, 320);</span>
+              }else{
+<span class="fc" id="L406">                text(&quot;White resigned&quot;, 680, 320);</span>
+              }
+<span class="fc" id="L408">              textSize(11);</span>
+<span class="fc" id="L409">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }
+          }
+<span class="fc" id="L412">          this.ended = true;</span>
+        }
+
+<span class="fc bfc" id="L415" title="All 2 branches covered.">        if(key == 'a'){</span>
+<span class="fc bfc" id="L416" title="All 2 branches covered.">          if(!autoOn){</span>
+<span class="fc" id="L417">            this.autoOn = true;</span>
+          }else{
+<span class="fc" id="L419">            this.autoOn = false;</span>
+          }
+        }
+<span class="fc" id="L422">    }</span>
+    
+    /**
+     * Receive key released signal from the keyboard.
+    */
+
+    public void keyReleased(){
+
+<span class="nc" id="L430">    }</span>
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+<span class="fc" id="L434">      int x = e.getX();</span>
+<span class="fc" id="L435">      int y = e.getY();</span>
+      // System.out.println(&quot;m = new MouseEvent(null, 1, MouseEvent.CLICK, 0, &quot; + Integer.toString(x) + &quot;, &quot; + Integer.toString(y) + &quot;, 0, 1);&quot;);
+      // System.out.println(&quot;a.mousePressed(m);&quot;);
+      // System.out.println(&quot;a.draw();&quot;);
+<span class="fc" id="L439">      int row = (int) Math.floor(y / CELLSIZE);</span>
+<span class="fc" id="L440">      int col = (int) Math.floor(x / CELLSIZE);</span>
+      
+<span class="pc bpc" id="L442" title="2 of 4 branches missed.">      if(col &lt; 14 &amp;&amp; row &lt; 14){</span>
+<span class="fc bfc" id="L443" title="All 2 branches covered.">        if(!pieceSelected){</span>
+<span class="fc bfc" id="L444" title="All 2 branches covered.">          if(this.board[row][col] != ' '){</span>
+<span class="fc bfc" id="L445" title="All 4 branches covered.">            if(player1Turn &amp;&amp; Character.isLowerCase(this.board[row][col])){</span>
+<span class="fc" id="L446">              this.rowChosen = row;</span>
+<span class="fc" id="L447">              this.colChosen = col;</span>
+<span class="fc" id="L448">              this.pieceSelected = true;</span>
+<span class="fc" id="L449">              this.moved = false;</span>
+<span class="fc" id="L450">              this.path = vmCheckLimit(rowChosen, colChosen);</span>
+<span class="pc bpc" id="L451" title="1 of 6 branches missed.">            }else if(!player1Turn &amp;&amp; Character.isUpperCase(this.board[row][col]) &amp;&amp; !autoOn){</span>
+<span class="fc" id="L452">              this.rowChosen = row;</span>
+<span class="fc" id="L453">              this.colChosen = col;</span>
+<span class="fc" id="L454">              this.pieceSelected = true;</span>
+<span class="fc" id="L455">              this.moved = false;</span>
+<span class="fc" id="L456">              this.path = vmCheckLimit(rowChosen, colChosen);</span>
+            }
+          }
+        }else{
+<span class="fc bfc" id="L460" title="All 8 branches covered.">          if((rowChosen != row || colChosen != col) &amp;&amp; vmCheckLimit(rowChosen, colChosen)[row][col] == 0 &amp;&amp; getValidMove(rowChosen, colChosen, this.board)[row][col] == 1){</span>
+<span class="fc" id="L461">            this.flash = true;</span>
+          }
+<span class="fc bfc" id="L463" title="All 6 branches covered.">          if((rowChosen != row || colChosen != col) &amp;&amp; vmCheckLimit(rowChosen, colChosen)[row][col] == 1){       //only move pieces when the second coordinate is not at the initial point</span>
+<span class="fc" id="L464">            movePiece(rowChosen, colChosen, row, col);</span>
+<span class="fc" id="L465">            this.lastPieceRow = row;</span>
+<span class="fc" id="L466">            this.lastPieceCol = col;</span>
+            
+            //switch turn
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">            if(moved){</span>
+<span class="fc bfc" id="L470" title="All 2 branches covered.">              if(player1Turn){</span>
+<span class="fc" id="L471">                this.player2Time += this.player2Increment;</span>
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">                if(this.player2Time &gt; 180){</span>
+<span class="fc" id="L473">                  this.player2Time = 180;</span>
+                }
+<span class="fc" id="L475">                this.frameCount = 0;</span>
+<span class="fc" id="L476">                this.player1Turn = false;</span>
+              }else{
+<span class="fc" id="L478">                this.player1Time += this.player1Increment;</span>
+<span class="pc bpc" id="L479" title="1 of 2 branches missed.">                if(this.player1Time &gt; 180){</span>
+<span class="fc" id="L480">                  this.player1Time = 180;</span>
+                }
+<span class="fc" id="L482">                this.frameCount = 0;</span>
+<span class="fc" id="L483">                this.player1Turn = true;</span>
+              }
+            }
+          }else{
+<span class="fc" id="L487">            this.pieceSelected = false;</span>
+<span class="fc" id="L488">            this.moved = false;</span>
+          }
+        }
+      }
+<span class="fc" id="L492">    }  </span>
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        
+<span class="nc" id="L497">    }</span>
+
+    /**
+     * Draw all elements in the game by current frame. 
+    */
+    public void draw() {
+<span class="fc bfc" id="L503" title="All 2 branches covered.">      if(!ended){</span>
+<span class="fc" id="L504">        this.frameCount++;</span>
+<span class="fc" id="L505">        background(168, 168, 168);</span>
+<span class="fc" id="L506">        drawBoard();</span>
+<span class="fc" id="L507">        drawPath();</span>
+
+<span class="fc bfc" id="L509" title="All 2 branches covered.">        if(player1Turn){</span>
+<span class="fc bfc" id="L510" title="All 2 branches covered.">          if(frameCount == 60){</span>
+<span class="fc" id="L511">            this.player1Time = max(0, this.player1Time - 1);</span>
+<span class="fc" id="L512">            this.frameCount = 0;</span>
+          }
+<span class="fc bfc" id="L514" title="All 2 branches covered.">          if(this.player1Time == 0){</span>
+<span class="fc bfc" id="L515" title="All 2 branches covered.">            if(autoOn){</span>
+<span class="fc" id="L516">              textSize(15);</span>
+<span class="fc" id="L517">              fill(255, 255, 255);</span>
+<span class="fc" id="L518">              text(&quot;You lost on \ntime!&quot;, 680, 320);</span>
+<span class="fc" id="L519">              textSize(11);</span>
+<span class="fc" id="L520">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }else{
+<span class="fc" id="L522">              textSize(15);</span>
+<span class="fc" id="L523">              fill(255, 255, 255);</span>
+<span class="fc bfc" id="L524" title="All 2 branches covered.">              if(playerColour.equals(&quot;white&quot;)){</span>
+<span class="fc" id="L525">                text(&quot;Black won on \ntime!&quot;, 680, 320);</span>
+              }else{
+<span class="fc" id="L527">                text(&quot;White won on \ntime!&quot;, 680, 320);</span>
+              }
+<span class="fc" id="L529">              textSize(11);</span>
+<span class="fc" id="L530">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }
+<span class="fc" id="L532">            this.ended = true;</span>
+          }
+<span class="fc bfc" id="L534" title="All 2 branches covered.">          if(!flash){</span>
+<span class="fc" id="L535">            drawCheck('k');</span>
+          }else{
+<span class="fc" id="L537">            textSize(15);</span>
+<span class="fc" id="L538">            fill(255, 255, 255);</span>
+<span class="fc" id="L539">            text(&quot;You must\ndefend\nyour king!&quot;, 690, 340);</span>
+<span class="pc bpc" id="L540" title="1 of 4 branches missed.">            if(frameCount % 60 &gt;= 30 &amp;&amp; flashCount &lt; 4){</span>
+<span class="fc" id="L541">              drawCheck('k');</span>
+            }
+<span class="fc bfc" id="L543" title="All 2 branches covered.">            if(frameCount == 0){</span>
+<span class="fc" id="L544">              this.flashCount += 1;</span>
+            }
+<span class="fc bfc" id="L546" title="All 2 branches covered.">            if(flashCount == 3){</span>
+<span class="fc" id="L547">              this.flash = false;</span>
+<span class="fc" id="L548">              this.flashCount = 0;</span>
+            }
+          }
+<span class="fc bfc" id="L551" title="All 2 branches covered.">          if(checkmate('k')){</span>
+<span class="fc bfc" id="L552" title="All 2 branches covered.">            if(autoOn){</span>
+<span class="fc" id="L553">              textSize(15);</span>
+<span class="fc" id="L554">              fill(255, 255, 255);</span>
+<span class="fc" id="L555">              text(&quot;You lost by \ncheckmate!&quot;, 680, 320);</span>
+<span class="fc" id="L556">              textSize(11);</span>
+<span class="fc" id="L557">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }else{
+<span class="fc" id="L559">              textSize(15);</span>
+<span class="fc" id="L560">              fill(255, 255, 255);</span>
+<span class="fc bfc" id="L561" title="All 2 branches covered.">              if(playerColour.equals(&quot;white&quot;)){</span>
+<span class="fc" id="L562">                text(&quot;Black won by \ncheckmate!&quot;, 680, 320);</span>
+              }else{
+<span class="fc" id="L564">                text(&quot;White won by \ncheckmate!&quot;, 680, 320);</span>
+              }
+<span class="fc" id="L566">              textSize(11);</span>
+<span class="fc" id="L567">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }
+<span class="fc" id="L569">            this.ended = true;</span>
+          }
+        }else{
+<span class="fc bfc" id="L572" title="All 2 branches covered.">          if(frameCount == 60){</span>
+<span class="fc" id="L573">            this.player2Time = max(0, this.player2Time - 1);</span>
+<span class="fc" id="L574">            this.frameCount = 0;</span>
+          }
+<span class="fc bfc" id="L576" title="All 2 branches covered.">          if(this.player2Time == 0){</span>
+<span class="fc bfc" id="L577" title="All 2 branches covered.">            if(autoOn){</span>
+<span class="fc" id="L578">              textSize(15);</span>
+<span class="fc" id="L579">              fill(255, 255, 255);</span>
+<span class="fc" id="L580">              text(&quot;You won on \ntime!&quot;, 680, 320);</span>
+<span class="fc" id="L581">              textSize(11);</span>
+<span class="fc" id="L582">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }else{
+<span class="fc" id="L584">              textSize(15);</span>
+<span class="fc" id="L585">              fill(255, 255, 255);</span>
+<span class="fc bfc" id="L586" title="All 2 branches covered.">              if(playerColour.equals(&quot;white&quot;)){</span>
+<span class="fc" id="L587">                text(&quot;White won on \ntime!&quot;, 680, 320);</span>
+              }else{
+<span class="fc" id="L589">                text(&quot;Black won on \ntime!&quot;, 680, 320);</span>
+              }
+<span class="fc" id="L591">              textSize(11);</span>
+<span class="fc" id="L592">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }
+<span class="fc" id="L594">            this.ended = true;</span>
+          }
+<span class="fc bfc" id="L596" title="All 2 branches covered.">          if(!flash){</span>
+<span class="fc" id="L597">            drawCheck('K');</span>
+          }else{
+<span class="fc" id="L599">            textSize(15);</span>
+<span class="fc" id="L600">            fill(255, 255, 255);</span>
+<span class="fc" id="L601">            text(&quot;You must\ndefend\nyour king!&quot;, 690, 340);</span>
+<span class="pc bpc" id="L602" title="1 of 4 branches missed.">            if(frameCount % 60 &gt;= 30 &amp;&amp; flashCount &lt; 4){</span>
+<span class="fc" id="L603">              drawCheck('K');</span>
+            }
+<span class="fc bfc" id="L605" title="All 2 branches covered.">            if(frameCount == 0){</span>
+<span class="fc" id="L606">              this.flashCount += 1;</span>
+            }
+<span class="fc bfc" id="L608" title="All 2 branches covered.">            if(flashCount == 3){</span>
+<span class="fc" id="L609">              this.flash = false;</span>
+<span class="fc" id="L610">              this.flashCount = 0;</span>
+            }
+          }
+<span class="fc bfc" id="L613" title="All 2 branches covered.">          if(checkmate('K')){</span>
+<span class="fc bfc" id="L614" title="All 2 branches covered.">            if(autoOn){</span>
+<span class="fc" id="L615">              textSize(15);</span>
+<span class="fc" id="L616">              fill(255, 255, 255);</span>
+<span class="fc" id="L617">              text(&quot;You won by \ncheckmate!&quot;, 680, 320);</span>
+<span class="fc" id="L618">              textSize(11);</span>
+<span class="fc" id="L619">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }else{
+<span class="fc" id="L621">              textSize(15);</span>
+<span class="fc" id="L622">              fill(255, 255, 255);</span>
+<span class="fc bfc" id="L623" title="All 2 branches covered.">              if(playerColour.equals(&quot;white&quot;)){</span>
+<span class="fc" id="L624">                text(&quot;White won by \ncheckmate!&quot;, 680, 320);</span>
+              }else{
+<span class="fc" id="L626">                text(&quot;Black won by \ncheckmate!&quot;, 680, 320);</span>
+              }
+<span class="fc" id="L628">              textSize(11);</span>
+<span class="fc" id="L629">              text(&quot;press r to restart&quot;, 680, 400);</span>
+            }
+<span class="fc" id="L631">            this.ended = true;</span>
+          }
+<span class="fc bfc" id="L633" title="All 4 branches covered.">          if(autoOn &amp;&amp; !ended){</span>
+<span class="fc" id="L634">            autoMove();</span>
+          }
+        }
+<span class="fc" id="L637">        textSize(11);</span>
+<span class="fc" id="L638">        fill(255, 255, 255);</span>
+<span class="fc bfc" id="L639" title="All 2 branches covered.">        if(autoOn){</span>
+<span class="fc" id="L640">          text(&quot;AI: On \npress a to turn \non/off AI&quot;, 690, 70);</span>
+        }else{
+<span class="fc" id="L642">          text(&quot;AI: Off \npress a to turn \non/off AI&quot;, 690, 70);</span>
+        }
+<span class="fc" id="L644">        textSize(32);</span>
+<span class="fc" id="L645">        fill(255, 255, 255);</span>
+<span class="fc" id="L646">        text(timeString(player1Time), 690, 655);</span>
+<span class="fc" id="L647">        text(timeString(player2Time), 690, 40);</span>
+<span class="fc" id="L648">        drawPieces();</span>
+      }
+<span class="fc" id="L650">    }</span>
+	
+	  // Add any additional methods or attributes you want. Please put classes in different files.
+
+    //time to string
+    public String timeString(int time){
+<span class="fc" id="L656">      int minutes = time / 60;</span>
+<span class="fc" id="L657">      int seconds = (time % 60);</span>
+<span class="fc" id="L658">      return String.format(&quot;%02d:%02d&quot;, minutes, seconds);</span>
+    }
+
+    //make movements
+    public void movePiece(int startX, int startY, int endX, int endY){
+<span class="fc bfc" id="L663" title="All 2 branches covered.">      if(this.board[endX][endY] == ' '){</span>
+<span class="fc" id="L664">        this.board[endX][endY] = this.board[startX][startY];</span>
+
+        //castling
+<span class="fc bfc" id="L667" title="All 2 branches covered.">        if(this.board[startX][startY] == 'k'){</span>
+<span class="fc" id="L668">          this.wKingMoved = true;</span>
+<span class="fc bfc" id="L669" title="All 2 branches covered.">          if(endY == startY - 2){</span>
+<span class="fc" id="L670">            this.board[13][endY + 1] = this.board[13][0];</span>
+<span class="fc" id="L671">            this.board[13][0] = ' ';</span>
+          }
+<span class="fc bfc" id="L673" title="All 2 branches covered.">          if(endY == startY + 2){</span>
+<span class="fc" id="L674">            this.board[13][endY - 1] = this.board[13][13];</span>
+<span class="fc" id="L675">            this.board[13][13] = ' ';</span>
+          }
+        }
+<span class="fc bfc" id="L678" title="All 2 branches covered.">        if(this.board[startX][startY] == 'K'){</span>
+<span class="fc" id="L679">          this.bKingMoved = true;</span>
+<span class="fc bfc" id="L680" title="All 2 branches covered.">          if(endY == startY - 2){</span>
+<span class="fc" id="L681">            this.board[0][endY + 1] = this.board[0][0];</span>
+<span class="fc" id="L682">            this.board[0][0] = ' ';</span>
+          }
+<span class="fc bfc" id="L684" title="All 2 branches covered.">          if(endY == startY + 2){</span>
+<span class="fc" id="L685">            this.board[0][endY - 1] = this.board[0][13];</span>
+<span class="fc" id="L686">            this.board[0][13] = ' ';</span>
+          }
+        }
+
+        //rook moved or not
+<span class="fc bfc" id="L691" title="All 2 branches covered.">        if(this.board[startX][startY] == 'r'){</span>
+<span class="fc bfc" id="L692" title="All 2 branches covered.">          if(startY == 0){</span>
+<span class="fc" id="L693">            this.wLRookMoved = true;</span>
+          }else{
+<span class="fc" id="L695">            this.wRRookMoved = true;</span>
+          }
+        }
+<span class="fc bfc" id="L698" title="All 2 branches covered.">        if(this.board[startX][startY] == 'R'){</span>
+<span class="fc bfc" id="L699" title="All 2 branches covered.">          if(startY == 0){</span>
+<span class="fc" id="L700">            this.bRRookMoved = true;</span>
+          }else{
+<span class="fc" id="L702">            this.bLRookMoved = true;</span>
+          }
+        }
+
+        //pawn to queen
+<span class="fc bfc" id="L707" title="All 2 branches covered.">        if(this.board[startX][startY] == 'p'){</span>
+<span class="fc bfc" id="L708" title="All 2 branches covered.">          if(endX &lt; 7){</span>
+<span class="fc" id="L709">            this.board[endX][endY] = 'q';</span>
+          }
+        }
+<span class="fc bfc" id="L712" title="All 2 branches covered.">        if(this.board[startX][startY] == 'P'){</span>
+<span class="fc bfc" id="L713" title="All 2 branches covered.">          if(endX &gt;= 7){</span>
+<span class="fc" id="L714">            this.board[endX][endY] = 'Q';</span>
+          }
+        }
+
+<span class="fc" id="L718">        this.board[startX][startY] = ' ';</span>
+<span class="fc" id="L719">        this.pieceSelected = false;</span>
+<span class="fc" id="L720">        this.moved = true;</span>
+      }
+
+<span class="fc bfc" id="L723" title="All 2 branches covered.">      if(isEnemy(this.board[startX][startY], this.board[endX][endY])){</span>
+<span class="fc" id="L724">        this.board[endX][endY] = this.board[startX][startY];</span>
+        
+        //castling
+<span class="pc bpc" id="L727" title="1 of 2 branches missed.">        if(this.board[startX][startY] == 'k'){</span>
+<span class="nc" id="L728">          this.wKingMoved = true;</span>
+        }
+<span class="pc bpc" id="L730" title="1 of 2 branches missed.">        if(this.board[startX][startY] == 'K'){</span>
+<span class="nc" id="L731">          this.bKingMoved = true;</span>
+        }
+
+        //rook moved or not
+<span class="pc bpc" id="L735" title="1 of 2 branches missed.">        if(this.board[startX][startY] == 'r'){</span>
+<span class="nc bnc" id="L736" title="All 2 branches missed.">          if(startY == 0){</span>
+<span class="nc" id="L737">            this.wLRookMoved = true;</span>
+          }else{
+<span class="nc" id="L739">            this.wRRookMoved = true;</span>
+          }
+        }
+<span class="fc bfc" id="L742" title="All 2 branches covered.">        if(this.board[startX][startY] == 'R'){</span>
+<span class="pc bpc" id="L743" title="1 of 2 branches missed.">          if(startY == 0){</span>
+<span class="nc" id="L744">            this.bRRookMoved = true;</span>
+          }else{
+<span class="fc" id="L746">            this.bLRookMoved = true;</span>
+          }
+        }
+
+        //pawn to queen
+<span class="pc bpc" id="L751" title="1 of 2 branches missed.">        if(this.board[startX][startY] == 'p'){</span>
+<span class="nc bnc" id="L752" title="All 2 branches missed.">          if(endX &lt; 7){</span>
+<span class="nc" id="L753">            this.board[endX][endY] = 'q';</span>
+          }        
+        }
+<span class="pc bpc" id="L756" title="1 of 2 branches missed.">        if(this.board[startX][startY] == 'P'){</span>
+<span class="nc bnc" id="L757" title="All 2 branches missed.">          if(endX &gt;= 7){</span>
+<span class="nc" id="L758">            this.board[endX][endY] = 'Q';</span>
+          }
+        }
+<span class="fc" id="L761">        this.board[startX][startY] = ' ';</span>
+<span class="fc" id="L762">        this.pieceSelected = false;</span>
+<span class="fc" id="L763">        this.moved = true;</span>
+      }
+<span class="fc" id="L765">    }</span>
+    
+    //drawing the path and valid move
+    public void drawPath(){
+<span class="pc bpc" id="L769" title="1 of 6 branches missed.">      if(colChosen != -1 &amp;&amp; rowChosen != -1 &amp;&amp; moved){</span>
+<span class="fc" id="L770">        this.lastRow = rowChosen;</span>
+<span class="fc" id="L771">        this.lastCol = colChosen;</span>
+      }
+<span class="pc bpc" id="L773" title="1 of 4 branches missed.">      if(this.lastRow != -1 &amp;&amp; this.lastCol != -1){</span>
+<span class="fc bfc" id="L774" title="All 2 branches covered.">        if((this.lastRow + this.lastCol) % 2 == 0){</span>
+<span class="fc" id="L775">          fill(210, 210, 0);</span>
+        }else{
+<span class="fc" id="L777">          fill(170, 170, 0);</span>
+        }
+<span class="fc" id="L779">        rect(this.lastCol * CELLSIZE, this.lastRow * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+
+<span class="fc bfc" id="L781" title="All 2 branches covered.">        if((this.lastPieceRow + this.lastPieceCol) % 2 == 0){</span>
+<span class="fc" id="L782">          fill(210, 210, 0);</span>
+        }else{
+<span class="fc" id="L784">          fill(170, 170, 0);</span>
+        }
+<span class="fc" id="L786">        rect(this.lastPieceCol * CELLSIZE, this.lastPieceRow * CELLSIZE, CELLSIZE, CELLSIZE);   </span>
+      }
+<span class="fc bfc" id="L788" title="All 2 branches covered.">      if(pieceSelected){</span>
+<span class="fc" id="L789">        fill(102, 153, 0);</span>
+<span class="fc" id="L790">        rect(colChosen * CELLSIZE, rowChosen * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+<span class="fc" id="L791">        drawValidMove();</span>
+      }
+<span class="fc" id="L793">    }</span>
+
+    //draw the board
+    public void drawBoard() {
+<span class="fc bfc" id="L797" title="All 2 branches covered.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L798" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L799" title="All 2 branches covered.">          if((row + col) % 2 == 0){</span>
+<span class="fc" id="L800">            fill(255, 228, 181);</span>
+          }else{
+<span class="fc" id="L802">            fill(205, 133, 63);</span>
+          }
+<span class="fc" id="L804">          rect(col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+        }
+      }
+<span class="fc" id="L807">    }</span>
+
+    //draw the pieces
+    public void drawPieces() {
+<span class="fc bfc" id="L811" title="All 2 branches covered.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L812" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc" id="L813">          char piece = this.board[row][col];</span>
+<span class="fc bfc" id="L814" title="All 2 branches covered.">          if (piece != ' ') {</span>
+<span class="fc" id="L815">            PImage img = pieces.get(piece);</span>
+<span class="fc" id="L816">            image(img, col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+          }
+        }
+      }
+<span class="fc" id="L820">    }</span>
+
+    //modify the valid move for each piece in special circumstances
+    public int[][] getValidMove(int rowChosen, int colChosen, char[][] board){
+<span class="fc" id="L824">      Piece p = pieceCode.get(board[rowChosen][colChosen]);</span>
+<span class="fc" id="L825">      int[][] vm = p.validMove(rowChosen, colChosen);</span>
+
+      //for white king castling
+<span class="fc bfc" id="L828" title="All 2 branches covered.">      if(board[rowChosen][colChosen] == 'k'){</span>
+<span class="fc bfc" id="L829" title="All 4 branches covered.">        if(!wKingMoved &amp;&amp; !wLRookMoved){</span>
+<span class="pc bpc" id="L830" title="5 of 12 branches missed.">          if(board[rowChosen][colChosen - 6] == ' ' &amp;&amp; board[rowChosen][colChosen - 5] == ' ' &amp;&amp; board[rowChosen][colChosen - 4] == ' ' &amp;&amp; board[rowChosen][colChosen - 3] == ' ' &amp;&amp; board[rowChosen][colChosen - 2] == ' ' &amp;&amp; board[rowChosen][colChosen - 1] == ' '){</span>
+<span class="fc" id="L831">            vm[rowChosen][colChosen - 2] = 1;</span>
+          }
+        }
+<span class="fc bfc" id="L834" title="All 4 branches covered.">        if(!wKingMoved &amp;&amp; !wRRookMoved){</span>
+<span class="pc bpc" id="L835" title="4 of 10 branches missed.">          if(board[rowChosen][colChosen + 5] == ' ' &amp;&amp; board[rowChosen][colChosen + 4] == ' ' &amp;&amp; board[rowChosen][colChosen + 3] == ' ' &amp;&amp; board[rowChosen][colChosen + 2] == ' ' &amp;&amp; board[rowChosen][colChosen + 1] == ' '){</span>
+<span class="fc" id="L836">            vm[rowChosen][colChosen + 2] = 1;</span>
+          }
+        }
+      }
+
+      //for black king castling
+<span class="fc bfc" id="L842" title="All 2 branches covered.">      if(board[rowChosen][colChosen] == 'K'){</span>
+<span class="fc bfc" id="L843" title="All 4 branches covered.">        if(!bKingMoved &amp;&amp; !bLRookMoved){</span>
+<span class="fc bfc" id="L844" title="All 12 branches covered.">          if(board[rowChosen][colChosen - 6] == ' ' &amp;&amp; board[rowChosen][colChosen - 5] == ' ' &amp;&amp; board[rowChosen][colChosen - 4] == ' ' &amp;&amp; board[rowChosen][colChosen - 3] == ' ' &amp;&amp; board[rowChosen][colChosen - 2] == ' ' &amp;&amp; board[rowChosen][colChosen - 1] == ' '){</span>
+<span class="fc" id="L845">            vm[rowChosen][colChosen - 2] = 1;</span>
+          }
+        }
+<span class="fc bfc" id="L848" title="All 4 branches covered.">        if(!bKingMoved &amp;&amp; !bRRookMoved){</span>
+<span class="fc bfc" id="L849" title="All 10 branches covered.">          if(board[rowChosen][colChosen + 5] == ' ' &amp;&amp; board[rowChosen][colChosen + 4] == ' ' &amp;&amp; board[rowChosen][colChosen + 3] == ' ' &amp;&amp; board[rowChosen][colChosen + 2] == ' ' &amp;&amp; board[rowChosen][colChosen + 1] == ' '){</span>
+<span class="fc" id="L850">            vm[rowChosen][colChosen + 2] = 1;</span>
+          }
+        }
+      }
+
+      //for white pawn
+<span class="fc bfc" id="L856" title="All 2 branches covered.">      if(p == WhitePawn){</span>
+<span class="fc bfc" id="L857" title="All 2 branches covered.">        if(colChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L858" title="All 4 branches covered.">          if(board[rowChosen - 1][colChosen + 1] != ' ' &amp;&amp; Character.isUpperCase(board[rowChosen - 1][colChosen + 1])){</span>
+<span class="fc" id="L859">            vm[rowChosen - 1][colChosen + 1] = 1;</span>
+          }
+        }
+<span class="fc bfc" id="L862" title="All 2 branches covered.">        if(colChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L863" title="All 4 branches covered.">          if(board[rowChosen - 1][colChosen - 1] != ' ' &amp;&amp; Character.isUpperCase(board[rowChosen - 1][colChosen - 1])){</span>
+<span class="fc" id="L864">            vm[rowChosen - 1][colChosen - 1] = 1;</span>
+          }
+        }
+<span class="fc bfc" id="L867" title="All 6 branches covered.">        if(rowChosen == 12 &amp;&amp; board[rowChosen - 2][colChosen] == ' ' &amp;&amp; board[rowChosen - 1][colChosen] == ' '){</span>
+<span class="fc" id="L868">          vm[rowChosen - 2][colChosen] = 1;</span>
+        }
+<span class="fc bfc" id="L870" title="All 2 branches covered.">        if(board[rowChosen - 1][colChosen] != ' '){</span>
+<span class="fc" id="L871">          vm[rowChosen - 1][colChosen] = 0;</span>
+        }
+      }
+
+      //for black pawn since the direction is the opposite
+<span class="fc bfc" id="L876" title="All 2 branches covered.">      if(p == BlackPawn){</span>
+<span class="fc bfc" id="L877" title="All 2 branches covered.">        if(colChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L878" title="All 4 branches covered.">          if(board[rowChosen + 1][colChosen + 1] != ' ' &amp;&amp; Character.isLowerCase(board[rowChosen + 1][colChosen + 1])){</span>
+<span class="fc" id="L879">            vm[rowChosen + 1][colChosen + 1] = 1;</span>
+          }
+        }
+<span class="fc bfc" id="L882" title="All 2 branches covered.">        if(colChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L883" title="All 4 branches covered.">          if(board[rowChosen + 1][colChosen - 1] != ' ' &amp;&amp; Character.isLowerCase(board[rowChosen + 1][colChosen - 1])){</span>
+<span class="fc" id="L884">            vm[rowChosen + 1][colChosen - 1] = 1;</span>
+          }
+        }
+<span class="fc bfc" id="L887" title="All 6 branches covered.">        if(rowChosen == 1 &amp;&amp; board[rowChosen + 2][colChosen] == ' ' &amp;&amp; board[rowChosen + 1][colChosen] == ' '){</span>
+<span class="fc" id="L888">          vm[rowChosen + 2][colChosen] = 1;</span>
+        }
+<span class="fc bfc" id="L890" title="All 2 branches covered.">        if(board[rowChosen + 1][colChosen] != ' '){</span>
+<span class="fc" id="L891">          vm[rowChosen + 1][colChosen] = 0;</span>
+        }
+      }
+
+<span class="fc bfc" id="L895" title="All 4 branches covered.">      if(p != WhitePawn &amp;&amp; p != BlackPawn){</span>
+<span class="fc bfc" id="L896" title="All 2 branches covered.">        for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L897" title="All 2 branches covered.">          for(int col = 0; col &lt; 14; col++){</span>
+
+            //cut the path if it is blocked
+<span class="fc bfc" id="L900" title="All 4 branches covered.">            if(vm[row][col] == 1 &amp;&amp; board[row][col] != ' '){</span>
+
+              //for vertical and horizontal
+<span class="fc bfc" id="L903" title="All 2 branches covered.">              if(col &lt; colChosen){</span>
+<span class="fc bfc" id="L904" title="All 2 branches covered.">                for(int backCol = col; backCol &gt;= 0; backCol--){</span>
+<span class="fc" id="L905">                  vm[row][backCol] = 0;</span>
+                }
+<span class="fc bfc" id="L907" title="All 2 branches covered.">                if(isEnemy(board[rowChosen][colChosen], board[row][col])){</span>
+<span class="fc" id="L908">                  vm[row][col] = 1;</span>
+                }
+<span class="fc bfc" id="L910" title="All 2 branches covered.">              }else if(col &gt; colChosen){</span>
+<span class="fc bfc" id="L911" title="All 2 branches covered.">                for(int nextCol = 0; nextCol &lt; 14 - col; nextCol++){</span>
+<span class="fc" id="L912">                  vm[row][col + nextCol] = 0;</span>
+                }
+<span class="fc bfc" id="L914" title="All 2 branches covered.">                if(isEnemy(board[rowChosen][colChosen], board[row][col])){</span>
+<span class="fc" id="L915">                  vm[row][col] = 1;</span>
+                }
+<span class="fc bfc" id="L917" title="All 2 branches covered.">              }else if(row &lt; rowChosen){</span>
+<span class="fc bfc" id="L918" title="All 2 branches covered.">                for(int backRow = row; backRow &gt;= 0; backRow--){</span>
+<span class="fc" id="L919">                  vm[backRow][col] = 0;</span>
+                }
+<span class="fc bfc" id="L921" title="All 2 branches covered.">                if(isEnemy(board[rowChosen][colChosen], board[row][col])){</span>
+<span class="fc" id="L922">                  vm[row][col] = 1;</span>
+                }
+<span class="pc bpc" id="L924" title="1 of 2 branches missed.">              }else if(row &gt; rowChosen){</span>
+<span class="fc bfc" id="L925" title="All 2 branches covered.">                for(int nextRow = 0; nextRow &lt; 14 - row; nextRow++){</span>
+<span class="fc" id="L926">                  vm[row + nextRow][col] = 0;</span>
+                }
+<span class="fc bfc" id="L928" title="All 2 branches covered.">                if(isEnemy(board[rowChosen][colChosen], board[row][col])){</span>
+<span class="fc" id="L929">                  vm[row][col] = 1;</span>
+                }
+              }
+
+              //for bishop path
+<span class="fc bfc" id="L934" title="All 4 branches covered.">              if(row - rowChosen == col - colChosen || row - rowChosen == colChosen - col){</span>
+<span class="fc bfc" id="L935" title="All 4 branches covered.">                if(row &lt; rowChosen &amp;&amp; col &lt; colChosen){</span>
+<span class="fc bfc" id="L936" title="All 2 branches covered.">                  for(int backRow = row; backRow &gt;= 0; backRow--){</span>
+<span class="fc bfc" id="L937" title="All 2 branches covered.">                    for(int backCol = col; backCol &gt;= 0; backCol--){</span>
+<span class="fc" id="L938">                      vm[backRow][backCol] = 0;</span>
+                    }
+                  }
+<span class="fc bfc" id="L941" title="All 2 branches covered.">                  if(isEnemy(board[rowChosen][colChosen], board[row][col])){</span>
+<span class="fc" id="L942">                    vm[row][col] = 1;</span>
+                  }
+<span class="fc bfc" id="L944" title="All 4 branches covered.">                }else if(row &gt; rowChosen &amp;&amp; col &gt; colChosen){</span>
+<span class="fc bfc" id="L945" title="All 2 branches covered.">                  for(int nextRow = 0; nextRow &lt; 14 - row; nextRow++){</span>
+<span class="fc bfc" id="L946" title="All 2 branches covered.">                    for(int nextCol = 0; nextCol &lt; 14 - col; nextCol++){</span>
+<span class="fc" id="L947">                      vm[row + nextRow][col + nextCol] = 0;</span>
+                    }
+                  }
+<span class="fc bfc" id="L950" title="All 2 branches covered.">                  if(isEnemy(board[rowChosen][colChosen], board[row][col])){</span>
+<span class="fc" id="L951">                    vm[row][col] = 1;</span>
+                  }
+<span class="pc bpc" id="L953" title="1 of 4 branches missed.">                }else if(row &lt; rowChosen &amp;&amp; col &gt; colChosen){</span>
+<span class="fc bfc" id="L954" title="All 2 branches covered.">                  for(int backRow = row; backRow &gt;= 0; backRow--){</span>
+<span class="fc bfc" id="L955" title="All 2 branches covered.">                    for(int nextCol = 0; nextCol &lt; 14 - col; nextCol++){</span>
+<span class="fc" id="L956">                      vm[backRow][col + nextCol] = 0;</span>
+                    }
+                  }
+<span class="fc bfc" id="L959" title="All 2 branches covered.">                  if(isEnemy(board[rowChosen][colChosen], board[row][col])){</span>
+<span class="fc" id="L960">                    vm[row][col] = 1;</span>
+                  }
+<span class="pc bpc" id="L962" title="2 of 4 branches missed.">                }else if(row &gt; rowChosen &amp;&amp; col &lt; colChosen){</span>
+<span class="fc bfc" id="L963" title="All 2 branches covered.">                  for(int nextRow = 0; nextRow &lt; 14 - row; nextRow++){</span>
+<span class="fc bfc" id="L964" title="All 2 branches covered.">                    for(int backCol = col; backCol &gt;= 0; backCol--){</span>
+<span class="fc" id="L965">                      vm[row + nextRow][backCol] = 0;</span>
+                    }
+                  }
+<span class="fc bfc" id="L968" title="All 2 branches covered.">                  if(isEnemy(board[rowChosen][colChosen], board[row][col])){</span>
+<span class="fc" id="L969">                    vm[row][col] = 1;</span>
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        //there was a bug that if there is a piece next to the 2nd square of bishop path, the path will be invalid
+<span class="fc bfc" id="L978" title="All 8 branches covered.">        if(p == Bishop || p == Archbishop || p == Amazon || p == Queen){</span>
+<span class="fc bfc" id="L979" title="All 4 branches covered.">          if(rowChosen + 2 &lt; 14 &amp;&amp; colChosen + 2 &lt; 14){</span>
+<span class="fc bfc" id="L980" title="All 2 branches covered.">            if(board[rowChosen + 1][colChosen + 1] == ' '){</span>
+<span class="fc bfc" id="L981" title="All 2 branches covered.">              if(board[rowChosen + 2][colChosen + 2] == ' '){</span>
+<span class="fc" id="L982">                vm[rowChosen + 2][colChosen + 2] = 1;</span>
+<span class="fc bfc" id="L983" title="All 2 branches covered.">              }else if(isEnemy(board[rowChosen][colChosen], board[rowChosen + 2][colChosen + 2])){</span>
+<span class="fc" id="L984">                vm[rowChosen + 2][colChosen + 2] = 1;</span>
+<span class="fc bfc" id="L985" title="All 2 branches covered.">                for(int i = 3; rowChosen + i &lt; 14; i++){</span>
+<span class="fc bfc" id="L986" title="All 2 branches covered.">                  for(int j = 3; colChosen + j &lt; 14; j++){</span>
+<span class="fc" id="L987">                    vm[rowChosen + i][colChosen + j] = 0;</span>
+                  }
+                }
+              }else{
+<span class="fc bfc" id="L991" title="All 2 branches covered.">                for(int i = 2; rowChosen + i &lt; 14; i++){</span>
+<span class="fc bfc" id="L992" title="All 2 branches covered.">                  for(int j = 2; colChosen + j &lt; 14; j++){</span>
+<span class="fc" id="L993">                    vm[rowChosen + i][colChosen + j] = 0;</span>
+                  }
+                }
+              }
+            }
+          }
+<span class="fc bfc" id="L999" title="All 4 branches covered.">          if(rowChosen - 2 &gt;= 0 &amp;&amp; colChosen + 2 &lt; 14){</span>
+<span class="fc bfc" id="L1000" title="All 2 branches covered.">            if(board[rowChosen - 1][colChosen + 1] == ' '){</span>
+<span class="fc bfc" id="L1001" title="All 2 branches covered.">              if(board[rowChosen - 2][colChosen + 2] == ' '){</span>
+<span class="fc" id="L1002">                vm[rowChosen - 2][colChosen + 2] = 1;</span>
+<span class="fc bfc" id="L1003" title="All 2 branches covered.">              }else if(isEnemy(board[rowChosen][colChosen], board[rowChosen - 2][colChosen + 2])){</span>
+<span class="fc" id="L1004">                vm[rowChosen - 2][colChosen + 2] = 1;</span>
+<span class="fc bfc" id="L1005" title="All 2 branches covered.">                for(int i = 3; rowChosen - i &gt;= 0; i++){</span>
+<span class="fc bfc" id="L1006" title="All 2 branches covered.">                  for(int j = 3; colChosen + j &lt; 14; j++){</span>
+<span class="fc" id="L1007">                    vm[rowChosen - i][colChosen + j] = 0;</span>
+                  }
+                }
+              }else{
+<span class="fc bfc" id="L1011" title="All 2 branches covered.">                for(int i = 2; rowChosen - i &gt;= 0; i++){</span>
+<span class="fc bfc" id="L1012" title="All 2 branches covered.">                  for(int j = 2; colChosen + j &lt; 14; j++){</span>
+<span class="fc" id="L1013">                    vm[rowChosen - i][colChosen + j] = 0;</span>
+                  }
+                }
+              }
+            }
+          }
+<span class="fc bfc" id="L1019" title="All 4 branches covered.">          if(rowChosen + 2 &lt; 14 &amp;&amp; colChosen - 2 &gt;= 0){</span>
+<span class="fc bfc" id="L1020" title="All 2 branches covered.">            if(board[rowChosen + 1][colChosen - 1] == ' '){</span>
+<span class="fc bfc" id="L1021" title="All 2 branches covered.">              if(board[rowChosen + 2][colChosen - 2] == ' '){</span>
+<span class="fc" id="L1022">                vm[rowChosen + 2][colChosen - 2] = 1;</span>
+<span class="fc bfc" id="L1023" title="All 2 branches covered.">              }else if(isEnemy(board[rowChosen][colChosen], board[rowChosen + 2][colChosen - 2])){</span>
+<span class="fc" id="L1024">                vm[rowChosen + 2][colChosen - 2] = 1;</span>
+<span class="fc bfc" id="L1025" title="All 2 branches covered.">                for(int i = 3; rowChosen + i &lt; 14; i++){</span>
+<span class="fc bfc" id="L1026" title="All 2 branches covered.">                  for(int j = 3; colChosen - j &gt;= 0; j++){</span>
+<span class="fc" id="L1027">                    vm[rowChosen + i][colChosen - j] = 0;</span>
+                  }
+                }
+              }else{
+<span class="fc bfc" id="L1031" title="All 2 branches covered.">                for(int i = 2; rowChosen + i &lt; 14; i++){</span>
+<span class="fc bfc" id="L1032" title="All 2 branches covered.">                  for(int j = 2; colChosen - j &gt;= 0; j++){</span>
+<span class="fc" id="L1033">                    vm[rowChosen + i][colChosen - j] = 0;</span>
+                  }
+                }
+              }
+              
+            }
+          }
+<span class="fc bfc" id="L1040" title="All 4 branches covered.">          if(rowChosen - 2 &gt;= 0 &amp;&amp; colChosen - 2 &gt;= 0){</span>
+<span class="fc bfc" id="L1041" title="All 2 branches covered.">            if(board[rowChosen - 1][colChosen - 1] == ' '){</span>
+<span class="fc bfc" id="L1042" title="All 2 branches covered.">              if(board[rowChosen - 2][colChosen - 2] == ' '){</span>
+<span class="fc" id="L1043">                vm[rowChosen - 2][colChosen - 2] = 1;</span>
+<span class="fc bfc" id="L1044" title="All 2 branches covered.">              }else if(isEnemy(board[rowChosen][colChosen], board[rowChosen - 2][colChosen - 2])){</span>
+<span class="fc" id="L1045">                vm[rowChosen - 2][colChosen - 2] = 1;</span>
+<span class="fc bfc" id="L1046" title="All 2 branches covered.">                for(int i = 3; rowChosen - i &gt;= 0; i++){</span>
+<span class="fc bfc" id="L1047" title="All 2 branches covered.">                  for(int j = 3; colChosen - j &gt;= 0; j++){</span>
+<span class="fc" id="L1048">                    vm[rowChosen - i][colChosen - j] = 0;</span>
+                  }
+                }
+              }else{
+<span class="fc bfc" id="L1052" title="All 2 branches covered.">                for(int i = 2; rowChosen - i &gt;= 0; i++){</span>
+<span class="fc bfc" id="L1053" title="All 2 branches covered.">                  for(int j = 2; colChosen - j &gt;= 0; j++){</span>
+<span class="fc" id="L1054">                    vm[rowChosen - i][colChosen - j] = 0;</span>
+                  }
+                }
+              }
+            }
+          }
+        } 
+      }
+
+      //for knight path
+<span class="fc bfc" id="L1064" title="All 10 branches covered.">      if(p == Chancellor || p == Guard || p == Archbishop || p == Amazon || p == Knight){</span>
+<span class="fc bfc" id="L1065" title="All 2 branches covered.">        if(rowChosen + 2 &lt; 14){</span>
+<span class="fc bfc" id="L1066" title="All 2 branches covered.">          if(colChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L1067" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen + 2][colChosen + 1]) &amp;&amp; board[rowChosen + 2][colChosen + 1] != ' '){</span>
+<span class="fc" id="L1068">              vm[rowChosen + 2][colChosen + 1] = 0;</span>
+            }else{
+<span class="fc" id="L1070">              vm[rowChosen + 2][colChosen + 1] = 1;</span>
+            }
+          }
+<span class="fc bfc" id="L1073" title="All 2 branches covered.">          if(colChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L1074" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen + 2][colChosen - 1]) &amp;&amp; board[rowChosen + 2][colChosen - 1] != ' '){</span>
+<span class="fc" id="L1075">              vm[rowChosen + 2][colChosen - 1] = 0;</span>
+            }else{
+<span class="fc" id="L1077">              vm[rowChosen + 2][colChosen - 1] = 1;</span>
+            }
+          }
+        }
+<span class="fc bfc" id="L1081" title="All 2 branches covered.">        if(rowChosen - 2 &gt;= 0){</span>
+<span class="fc bfc" id="L1082" title="All 2 branches covered.">          if(colChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L1083" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen - 2][colChosen + 1]) &amp;&amp; board[rowChosen - 2][colChosen + 1] != ' '){</span>
+<span class="fc" id="L1084">              vm[rowChosen - 2][colChosen + 1] = 0;</span>
+            }else{
+<span class="fc" id="L1086">              vm[rowChosen - 2][colChosen + 1] = 1;</span>
+            }
+          }
+<span class="fc bfc" id="L1089" title="All 2 branches covered.">          if(colChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L1090" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen - 2][colChosen - 1]) &amp;&amp; board[rowChosen - 2][colChosen - 1] != ' '){</span>
+<span class="fc" id="L1091">              vm[rowChosen - 2][colChosen - 1] = 0;</span>
+            }else{
+<span class="fc" id="L1093">              vm[rowChosen - 2][colChosen - 1] = 1;</span>
+            }
+          }
+        }
+<span class="fc bfc" id="L1097" title="All 2 branches covered.">        if(colChosen - 2 &gt;= 0){</span>
+<span class="fc bfc" id="L1098" title="All 2 branches covered.">          if(rowChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L1099" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen + 1][colChosen - 2]) &amp;&amp; board[rowChosen + 1][colChosen - 2] != ' '){</span>
+<span class="fc" id="L1100">              vm[rowChosen + 1][colChosen - 2] = 0;</span>
+            }else{
+<span class="fc" id="L1102">              vm[rowChosen + 1][colChosen - 2] = 1;</span>
+            }
+          }
+<span class="fc bfc" id="L1105" title="All 2 branches covered.">          if(rowChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L1106" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen - 1][colChosen - 2]) &amp;&amp; board[rowChosen - 1][colChosen - 2] != ' '){</span>
+<span class="fc" id="L1107">              vm[rowChosen - 1][colChosen - 2] = 0;</span>
+            }else{
+<span class="fc" id="L1109">              vm[rowChosen - 1][colChosen - 2] = 1;</span>
+            }
+          }
+        }
+<span class="fc bfc" id="L1113" title="All 2 branches covered.">        if(colChosen + 2 &lt; 14){</span>
+<span class="fc bfc" id="L1114" title="All 2 branches covered.">          if(rowChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L1115" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen + 1][colChosen + 2]) &amp;&amp; board[rowChosen + 1][colChosen + 2] != ' '){</span>
+<span class="fc" id="L1116">              vm[rowChosen + 1][colChosen + 2] = 0;</span>
+            }else{
+<span class="fc" id="L1118">              vm[rowChosen + 1][colChosen + 2] = 1;</span>
+            }
+          }
+<span class="fc bfc" id="L1121" title="All 2 branches covered.">          if(rowChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L1122" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen - 1][colChosen + 2]) &amp;&amp; board[rowChosen - 1][colChosen + 2] != ' '){</span>
+<span class="fc" id="L1123">              vm[rowChosen - 1][colChosen + 2] = 0;</span>
+            }else{
+<span class="fc" id="L1125">              vm[rowChosen - 1][colChosen + 2] = 1;</span>
+            }
+          }
+        }
+      }
+
+      //for camel path
+<span class="fc bfc" id="L1132" title="All 2 branches covered.">      if(p == Camel){</span>
+<span class="fc bfc" id="L1133" title="All 2 branches covered.">        if(rowChosen + 3 &lt; 14){</span>
+<span class="pc bpc" id="L1134" title="1 of 2 branches missed.">          if(colChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L1135" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen + 3][colChosen + 1]) &amp;&amp; board[rowChosen + 3][colChosen + 1] != ' '){</span>
+<span class="fc" id="L1136">              vm[rowChosen + 3][colChosen + 1] = 0;</span>
+            }
+          }
+<span class="pc bpc" id="L1139" title="1 of 2 branches missed.">          if(colChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L1140" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen + 3][colChosen - 1]) &amp;&amp; board[rowChosen + 3][colChosen - 1] != ' '){</span>
+<span class="fc" id="L1141">              vm[rowChosen + 3][colChosen - 1] = 0;</span>
+            }
+          }
+        }
+
+<span class="fc bfc" id="L1146" title="All 2 branches covered.">        if(rowChosen - 3 &gt;= 0){</span>
+<span class="pc bpc" id="L1147" title="1 of 2 branches missed.">          if(colChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L1148" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen - 3][colChosen + 1]) &amp;&amp; board[rowChosen - 3][colChosen + 1] != ' '){</span>
+<span class="fc" id="L1149">              vm[rowChosen - 3][colChosen + 1] = 0;</span>
+            }
+          }
+<span class="pc bpc" id="L1152" title="1 of 2 branches missed.">          if(colChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L1153" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen - 3][colChosen - 1]) &amp;&amp; board[rowChosen - 3][colChosen - 1] != ' '){</span>
+<span class="fc" id="L1154">              vm[rowChosen - 3][colChosen - 1] = 0;</span>
+            }
+          }
+        }
+
+<span class="pc bpc" id="L1159" title="1 of 2 branches missed.">        if(colChosen - 3 &gt;= 0){</span>
+<span class="fc bfc" id="L1160" title="All 2 branches covered.">          if(rowChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L1161" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen + 1][colChosen - 3]) &amp;&amp; board[rowChosen + 1][colChosen - 3] != ' '){</span>
+<span class="fc" id="L1162">              vm[rowChosen + 1][colChosen - 3] = 0;</span>
+            }
+          }
+<span class="fc bfc" id="L1165" title="All 2 branches covered.">          if(rowChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L1166" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen - 1][colChosen - 3]) &amp;&amp; board[rowChosen - 1][colChosen - 3] != ' '){</span>
+<span class="fc" id="L1167">              vm[rowChosen - 1][colChosen - 3] = 0;</span>
+            }
+          }
+        }
+
+<span class="pc bpc" id="L1172" title="1 of 2 branches missed.">        if(colChosen + 3 &lt; 14){</span>
+<span class="fc bfc" id="L1173" title="All 2 branches covered.">          if(rowChosen + 1 &lt; 14){</span>
+<span class="fc bfc" id="L1174" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen + 1][colChosen + 3]) &amp;&amp; board[rowChosen + 1][colChosen + 3] != ' '){</span>
+<span class="fc" id="L1175">              vm[rowChosen + 1][colChosen + 3] = 0;</span>
+            }
+          }
+<span class="fc bfc" id="L1178" title="All 2 branches covered.">          if(rowChosen - 1 &gt;= 0){</span>
+<span class="fc bfc" id="L1179" title="All 4 branches covered.">            if(!isEnemy(board[rowChosen][colChosen], board[rowChosen - 1][colChosen + 3]) &amp;&amp; board[rowChosen - 1][colChosen + 3] != ' '){</span>
+<span class="fc" id="L1180">              vm[rowChosen - 1][colChosen + 3] = 0;</span>
+            }
+          }
+        }
+      }
+<span class="fc" id="L1185">      return vm;</span>
+    }
+    
+    //paint the path 
+    public void drawValidMove(){
+<span class="fc bfc" id="L1190" title="All 4 branches covered.">      if(!player1Turn &amp;&amp; autoOn){</span>
+<span class="fc" id="L1191">        return;</span>
+      }
+<span class="fc bfc" id="L1193" title="All 2 branches covered.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1194" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1195" title="All 2 branches covered.">          if(this.path[row][col] == 1){</span>
+<span class="fc bfc" id="L1196" title="All 2 branches covered.">            if((row + col) % 2 == 0){</span>
+<span class="fc" id="L1197">              fill(214, 237, 245);</span>
+<span class="fc" id="L1198">              rect(col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+            }else{
+<span class="fc" id="L1200">              fill(136, 200, 221);</span>
+<span class="fc" id="L1201">              rect(col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+            }
+<span class="fc bfc" id="L1203" title="All 2 branches covered.">            if(isEnemy(this.board[rowChosen][colChosen], this.board[row][col])){</span>
+<span class="fc" id="L1204">              fill(255, 153, 102);</span>
+<span class="fc" id="L1205">              rect(col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+            }
+          }  
+        }
+      } 
+<span class="fc" id="L1210">    }</span>
+
+    //see if the piece is enemy
+    public boolean isEnemy(char piece1, char piece2){
+<span class="fc bfc" id="L1214" title="All 2 branches covered.">      if(piece2 == ' '){</span>
+<span class="fc" id="L1215">        return false;</span>
+      }
+<span class="fc bfc" id="L1217" title="All 2 branches covered.">      if(Character.isLowerCase(piece1)){</span>
+<span class="fc bfc" id="L1218" title="All 2 branches covered.">        if(Character.isUpperCase(piece2)){</span>
+<span class="fc" id="L1219">          return true;</span>
+        }else{
+<span class="fc" id="L1221">          return false;</span>
+        }
+<span class="fc bfc" id="L1223" title="All 2 branches covered.">      }else if(Character.isUpperCase(piece1)){</span>
+<span class="fc bfc" id="L1224" title="All 2 branches covered.">        if(Character.isLowerCase(piece2)){</span>
+<span class="fc" id="L1225">          return true;</span>
+        }else{
+<span class="fc" id="L1227">          return false;</span>
+        }
+      }
+<span class="fc" id="L1230">      return false;</span>
+    }
+
+    //identify check
+    public boolean check(char king, char[][] board){
+<span class="fc" id="L1235">      boolean check = false;</span>
+<span class="fc" id="L1236">      boolean kingFound = false;</span>
+<span class="fc bfc" id="L1237" title="All 4 branches covered.">      if(king != 'k' &amp;&amp; king != 'K'){</span>
+<span class="fc" id="L1238">        return false;</span>
+      }
+<span class="fc" id="L1240">      int kingRow = -1;</span>
+<span class="fc" id="L1241">      int kingCol = -1;</span>
+<span class="pc bpc" id="L1242" title="1 of 2 branches missed.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1243" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1244" title="All 2 branches covered.">          if(board[row][col] == king){</span>
+<span class="fc" id="L1245">            kingRow = row;</span>
+<span class="fc" id="L1246">            kingCol = col;</span>
+<span class="fc" id="L1247">            kingFound = true;</span>
+<span class="fc" id="L1248">            break;</span>
+          }
+        }
+<span class="fc bfc" id="L1251" title="All 2 branches covered.">        if(kingFound){</span>
+<span class="fc" id="L1252">          break;</span>
+        }
+      }
+      
+<span class="fc bfc" id="L1256" title="All 2 branches covered.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1257" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1258" title="All 2 branches covered.">          if(king == 'k'){</span>
+<span class="fc bfc" id="L1259" title="All 4 branches covered.">            if(board[row][col] != ' ' &amp;&amp; Character.isUpperCase(board[row][col])){</span>
+<span class="fc bfc" id="L1260" title="All 2 branches covered.">              if(getValidMove(row, col, board)[kingRow][kingCol] == 1){</span>
+<span class="fc" id="L1261">                check = true;</span>
+<span class="fc" id="L1262">                break;</span>
+              }
+            }
+<span class="pc bpc" id="L1265" title="1 of 2 branches missed.">          }else if(king == 'K'){</span>
+<span class="fc bfc" id="L1266" title="All 4 branches covered.">            if(board[row][col] != ' ' &amp;&amp; Character.isLowerCase(board[row][col])){</span>
+<span class="fc bfc" id="L1267" title="All 2 branches covered.">              if(getValidMove(row, col, board)[kingRow][kingCol] == 1){</span>
+<span class="fc" id="L1268">                check = true;</span>
+<span class="fc" id="L1269">                break;</span>
+              }
+            }
+          }
+        }
+<span class="fc bfc" id="L1274" title="All 2 branches covered.">        if(check){</span>
+<span class="fc" id="L1275">          break;</span>
+        }
+      }
+<span class="fc" id="L1278">      return check;</span>
+    }
+
+    //visually display the check
+    public void drawCheck(char king){
+<span class="pc bpc" id="L1283" title="1 of 4 branches missed.">      if(king != 'k' &amp;&amp; king != 'K'){</span>
+<span class="nc" id="L1284">        return;</span>
+      }
+<span class="fc" id="L1286">      boolean checkmate = false;</span>
+<span class="fc" id="L1287">      int kingRow = -1;</span>
+<span class="fc" id="L1288">      int kingCol = -1;</span>
+<span class="fc bfc" id="L1289" title="All 2 branches covered.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1290" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1291" title="All 2 branches covered.">          if(this.board[row][col] == king){</span>
+<span class="fc" id="L1292">            kingRow = row;</span>
+<span class="fc" id="L1293">            kingCol = col;</span>
+<span class="fc" id="L1294">            break;</span>
+          }
+        }
+      }
+<span class="fc bfc" id="L1298" title="All 2 branches covered.">      if(checkmate(king)){</span>
+<span class="fc bfc" id="L1299" title="All 2 branches covered.">        for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1300" title="All 2 branches covered.">          for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1301" title="All 2 branches covered.">            if(getValidMove(kingRow, kingCol, board)[row][col] == 1){</span>
+<span class="fc bfc" id="L1302" title="All 2 branches covered.">              for(int i = 0; i &lt; 14; i++){</span>
+<span class="fc bfc" id="L1303" title="All 2 branches covered.">                for(int j = 0; j &lt; 14; j++){</span>
+<span class="fc bfc" id="L1304" title="All 2 branches covered.">                  if(isEnemy(king, board[i][j])){</span>
+<span class="fc bfc" id="L1305" title="All 2 branches covered.">                    if(getValidMove(i, j, board)[row][col] == 1){</span>
+<span class="fc" id="L1306">                      fill(255, 153, 102);</span>
+<span class="fc" id="L1307">                      rect(j * CELLSIZE, i * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+<span class="fc" id="L1308">                      break;</span>
+                    }
+                  }
+                }
+              }
+            } 
+          }
+        }
+<span class="fc" id="L1316">        checkmate = true;</span>
+      }
+<span class="fc bfc" id="L1318" title="All 2 branches covered.">      if(check(king, this.board)){</span>
+<span class="fc" id="L1319">        fill(208, 0, 0);</span>
+<span class="fc" id="L1320">        rect(kingCol * CELLSIZE, kingRow * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+<span class="fc bfc" id="L1321" title="All 2 branches covered.">        if(this.board[rowChosen][colChosen] == king){</span>
+<span class="fc bfc" id="L1322" title="All 2 branches covered.">          if(pieceSelected){</span>
+<span class="fc" id="L1323">            fill(102, 153, 0);</span>
+<span class="fc" id="L1324">            rect(colChosen * CELLSIZE, rowChosen * CELLSIZE, CELLSIZE, CELLSIZE);</span>
+<span class="fc" id="L1325">            drawValidMove();</span>
+          }
+        }  
+<span class="fc bfc" id="L1328" title="All 4 branches covered.">        if(!checkmate &amp;&amp; !flash){</span>
+<span class="fc" id="L1329">          textSize(15);</span>
+<span class="fc" id="L1330">          fill(255, 255, 255);</span>
+<span class="fc" id="L1331">          text(&quot;Check!&quot;, 690, 340);</span>
+        }  
+      }
+<span class="fc" id="L1334">    }</span>
+
+    //get the validmove retricted by check condition
+    public int[][] vmCheckLimit(int rowChosen, int colChosen){
+      char king;
+<span class="fc bfc" id="L1339" title="All 2 branches covered.">      if(player1Turn){</span>
+<span class="fc" id="L1340">        king = 'k';</span>
+      }else{
+<span class="fc" id="L1342">        king = 'K';</span>
+      }
+<span class="fc" id="L1344">      int[][] vm = getValidMove(rowChosen, colChosen, this.board);</span>
+<span class="fc bfc" id="L1345" title="All 2 branches covered.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1346" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1347" title="All 2 branches covered.">          if(vm[row][col] == 1){</span>
+<span class="fc" id="L1348">            char[][] tempBoard = new char[14][14];</span>
+<span class="fc bfc" id="L1349" title="All 2 branches covered.">            for (int i = 0; i &lt; 14; i++) {</span>
+<span class="fc bfc" id="L1350" title="All 2 branches covered.">              for (int j = 0; j &lt; 14; j++) {</span>
+<span class="fc" id="L1351">                tempBoard[i][j] = this.board[i][j];</span>
+              }
+            }
+
+<span class="fc bfc" id="L1355" title="All 2 branches covered.">            if(tempBoard[row][col] == ' '){ </span>
+<span class="fc" id="L1356">              tempBoard[row][col] = tempBoard[rowChosen][colChosen];</span>
+<span class="fc" id="L1357">              tempBoard[rowChosen][colChosen] = ' ';</span>
+<span class="fc bfc" id="L1358" title="All 2 branches covered.">              if(tempBoard[row][col] == king){</span>
+<span class="fc bfc" id="L1359" title="All 2 branches covered.">                if(col - colChosen == -2){</span>
+<span class="fc" id="L1360">                  tempBoard[row][col + 1] = tempBoard[row][0];</span>
+<span class="fc" id="L1361">                  tempBoard[row][0] = ' ';</span>
+                }
+<span class="fc bfc" id="L1363" title="All 2 branches covered.">                if(col - colChosen == 2){</span>
+<span class="fc" id="L1364">                  tempBoard[row][col - 1] = tempBoard[row][13];</span>
+<span class="fc" id="L1365">                  tempBoard[row][13] = ' ';</span>
+                }
+              }
+<span class="fc bfc" id="L1368" title="All 2 branches covered.">              if(check(king, tempBoard)){</span>
+<span class="fc" id="L1369">                vm[row][col] = 0;</span>
+              }
+            }
+<span class="fc bfc" id="L1372" title="All 2 branches covered.">            if(isEnemy(tempBoard[rowChosen][colChosen], tempBoard[row][col])){</span>
+<span class="fc" id="L1373">              tempBoard[row][col] = tempBoard[rowChosen][colChosen];</span>
+<span class="fc" id="L1374">              tempBoard[rowChosen][colChosen] = ' ';</span>
+<span class="fc bfc" id="L1375" title="All 2 branches covered.">              if(check(king, tempBoard)){</span>
+<span class="fc" id="L1376">                vm[row][col] = 0;</span>
+              }
+            } 
+          }
+        }
+      }
+<span class="fc" id="L1382">      return vm;</span>
+    }
+
+    //identify checkmate
+    public boolean checkmate(char king){
+<span class="fc bfc" id="L1387" title="All 4 branches covered.">      if(king != 'k' &amp;&amp; king != 'K'){</span>
+<span class="fc" id="L1388">        return false;</span>
+      }
+<span class="fc bfc" id="L1390" title="All 2 branches covered.">      if(!check(king, this.board)){</span>
+<span class="fc" id="L1391">        return false;</span>
+      }else{
+<span class="fc" id="L1393">        int sum = 0;</span>
+<span class="fc bfc" id="L1394" title="All 2 branches covered.">        for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1395" title="All 2 branches covered.">          for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1396" title="All 6 branches covered.">            if(king == 'k' &amp;&amp; this.board[row][col] != ' ' &amp;&amp; Character.isLowerCase(this.board[row][col])){</span>
+<span class="fc bfc" id="L1397" title="All 2 branches covered.">              for(int[] i: vmCheckLimit(row, col)){</span>
+<span class="fc bfc" id="L1398" title="All 2 branches covered.">                for(int j: i){</span>
+<span class="fc bfc" id="L1399" title="All 2 branches covered.">                  if(j != 2){</span>
+<span class="fc" id="L1400">                    sum += j;</span>
+                  }
+                }
+              }
+            }
+<span class="fc bfc" id="L1405" title="All 6 branches covered.">            if(king == 'K' &amp;&amp; this.board[row][col] != ' ' &amp;&amp; Character.isUpperCase(this.board[row][col])){</span>
+<span class="fc bfc" id="L1406" title="All 2 branches covered.">              for(int[] i: vmCheckLimit(row, col)){</span>
+<span class="fc bfc" id="L1407" title="All 2 branches covered.">                for(int j: i){</span>
+<span class="fc bfc" id="L1408" title="All 2 branches covered.">                  if(j != 2){</span>
+<span class="fc" id="L1409">                    sum += j;</span>
+                  }
+                }
+              }
+            }
+          }
+        }
+<span class="fc bfc" id="L1416" title="All 2 branches covered.">        if(sum == 0){</span>
+<span class="fc" id="L1417">          return true;</span>
+        }
+      }
+<span class="fc" id="L1420">      return false;</span>
+    }
+
+    //AI scans the board and get choose the piece to move
+    public char[] autoScan(char[][] board){
+<span class="fc bfc" id="L1425" title="All 2 branches covered.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1426" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1427" title="All 4 branches covered.">          if(board[row][col] != ' ' &amp;&amp; Character.isUpperCase(board[row][col])){</span>
+<span class="fc" id="L1428">            boolean pathFound = false;</span>
+<span class="fc bfc" id="L1429" title="All 2 branches covered.">            for(int[] i: vmCheckLimit(row, col)){</span>
+<span class="fc bfc" id="L1430" title="All 2 branches covered.">              for(int j: i){</span>
+<span class="fc bfc" id="L1431" title="All 2 branches covered.">                if(j == 1){</span>
+<span class="fc" id="L1432">                  movables.add(board[row][col]);</span>
+<span class="fc" id="L1433">                  pathFound = true;</span>
+<span class="fc" id="L1434">                  break;</span>
+                }
+              }
+<span class="fc bfc" id="L1437" title="All 2 branches covered.">              if(pathFound){</span>
+<span class="fc" id="L1438">                break;</span>
+              }
+            }
+          }
+        }
+      }
+<span class="fc" id="L1444">      char[] returnValue = new char[movables.size()];</span>
+<span class="fc bfc" id="L1445" title="All 2 branches covered.">      for(int i = 0; i &lt; movables.size(); i++){</span>
+<span class="fc" id="L1446">        returnValue[i] = movables.get(i);</span>
+      }
+<span class="fc" id="L1448">      movables.removeAll(movables);</span>
+<span class="fc" id="L1449">      return returnValue;</span>
+    }
+
+    //AI moves the piece
+    public void autoMove(){
+<span class="fc bfc" id="L1454" title="All 2 branches covered.">      if(player1Turn){</span>
+<span class="fc" id="L1455">        return;</span>
+      }
+<span class="fc" id="L1457">      char[] pieces = autoScan(this.board);</span>
+<span class="fc" id="L1458">      int randomIndex = pick.nextInt(pieces.length);</span>
+<span class="fc" id="L1459">      char piecePicked = pieces[randomIndex];</span>
+<span class="fc" id="L1460">      boolean found = false;</span>
+<span class="pc bpc" id="L1461" title="1 of 2 branches missed.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1462" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1463" title="All 2 branches covered.">          if(this.board[row][col] == piecePicked){</span>
+<span class="fc" id="L1464">            this.rowChosen = row;</span>
+<span class="fc" id="L1465">            this.colChosen = col;</span>
+<span class="fc" id="L1466">            this.pieceSelected = true;</span>
+<span class="fc" id="L1467">            found = true;</span>
+<span class="fc" id="L1468">            break;</span>
+          }
+        }
+<span class="fc bfc" id="L1471" title="All 2 branches covered.">        if(found){</span>
+<span class="fc" id="L1472">          break;</span>
+        }
+      }
+<span class="fc" id="L1475">      boolean aimoved = false;</span>
+<span class="fc bfc" id="L1476" title="All 2 branches covered.">      for(int row = 0; row &lt; 14; row++){</span>
+<span class="fc bfc" id="L1477" title="All 2 branches covered.">        for(int col = 0; col &lt; 14; col++){</span>
+<span class="fc bfc" id="L1478" title="All 2 branches covered.">          if(vmCheckLimit(rowChosen, colChosen)[row][col] == 1){</span>
+<span class="fc" id="L1479">            randomIndex = pick.nextInt(10);</span>
+<span class="pc bpc" id="L1480" title="1 of 4 branches missed.">            if(randomIndex == 1 || isEnemy(this.board[rowChosen][colChosen], this.board[row][col])){</span>
+<span class="fc" id="L1481">              movePiece(rowChosen, colChosen, row, col);</span>
+<span class="fc" id="L1482">              this.lastPieceRow = row;</span>
+<span class="fc" id="L1483">              this.lastPieceCol = col;</span>
+<span class="fc" id="L1484">              aimoved = true;</span>
+<span class="fc" id="L1485">              break;</span>
+            }
+          }
+        }
+<span class="fc bfc" id="L1489" title="All 2 branches covered.">        if(aimoved){</span>
+<span class="fc" id="L1490">          break;</span>
+        }
+      }
+<span class="fc bfc" id="L1493" title="All 2 branches covered.">      if(aimoved){</span>
+<span class="fc" id="L1494">        this.player1Time += this.player1Increment;</span>
+<span class="pc bpc" id="L1495" title="1 of 2 branches missed.">        if(this.player1Time &gt; 180){</span>
+<span class="fc" id="L1496">          this.player1Time = 180;</span>
+        }
+<span class="fc" id="L1498">        this.frameCount = 0;</span>
+<span class="fc" id="L1499">        this.player1Turn = true;</span>
+      }else{
+<span class="fc" id="L1501">        autoMove();</span>
+      }
+<span class="fc" id="L1503">    }</span>
+
+    public void testing(){
+<span class="fc" id="L1506">      this.configPath = &quot;test_config.json&quot;;</span>
+<span class="fc" id="L1507">    }</span>
+
+    public static void main(String[] args) {
+<span class="nc" id="L1510">        PApplet.main(&quot;XXLChess.App&quot;);</span>
+<span class="nc" id="L1511">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

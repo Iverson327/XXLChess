@@ -1,0 +1,596 @@
+              if(row == 1){
+                bPawn.resize(48, 48);
+                image(bPawn, col * CELLSIZE, row * CELLSIZE);
+              }
+
+              if(row == 12){
+                wPawn.resize(48, 48);
+                image(wPawn, col * CELLSIZE, row * CELLSIZE);
+              }
+
+              if(row == 0){
+                if (col == 0 || col == 13) {
+                    bRook.resize(48, 48);
+                    image(bRook, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 1 || col == 12){
+                    bKnight.resize(48, 48);
+                    image(bKnight, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 2 || col == 11){
+                    bBishop.resize(48, 48);
+                    image(bBishop, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 3 || col == 10){
+                    bArchbishop.resize(48, 48);
+                    image(bArchbishop, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 4 || col == 9){
+                    bCamel.resize(48, 48);
+                    image(bCamel, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 5 || col == 8){
+                    bGuard.resize(48, 48);
+                    image(bGuard, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 6){
+                    bAmazon.resize(48, 48);
+                    image(bAmazon, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 7){
+                    bKing.resize(48, 48);
+                    image(bKing, col * CELLSIZE, row * CELLSIZE);
+                }
+              }
+
+              if(row == 13){
+                if (col == 0 || col == 13) {
+                    wRook.resize(48, 48);
+                    image(wRook, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 1 || col == 12){
+                    wKnight.resize(48, 48);
+                    image(wKnight, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 2 || col == 11){
+                    wBishop.resize(48, 48);
+                    image(wBishop, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 3 || col == 10){
+                    wArchbishop.resize(48, 48);
+                    image(wArchbishop, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 4 || col == 9){
+                    wCamel.resize(48, 48);
+                    image(wCamel, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 5 || col == 8){
+                    wGuard.resize(48, 48);
+                    image(wGuard, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 6){
+                    wAmazon.resize(48, 48);
+                    image(wAmazon, col * CELLSIZE, row * CELLSIZE);
+                }
+                if(col == 7){
+                    wKing.resize(48, 48);
+                    image(wKing, col * CELLSIZE, row * CELLSIZE);
+                }
+              }
+
+
+              char piece = board[row][col];
+              if (piece != ' ') {
+                PImage img = pieces.get(piece);
+                image(img, col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);
+              }
+
+
+class Piece{
+
+}
+
+class Amazon extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-amazon.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-amazon.png";
+}
+
+class Archbishop extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-archbishop.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-archbishop.png";
+}
+
+class Bishop extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-bishop.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-bishop.png";
+}
+
+class Camel extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-camel.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-camel.png";
+}
+
+class Chancellor extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-chancellor.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-chancellor.png";
+}
+
+class King extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-king.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-king.png";
+}
+
+class Knight extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-knight.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-knight.png";
+}
+
+class Guard extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-knight-king.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-knight-king.png";
+}
+
+class Pawn extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-pawn.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-pawn.png";
+}
+
+class Queen extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-queen.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-queen.png";
+}
+
+class Rook extends Piece{
+    public static final String bImage = "src/main/resources/XXLChess/b-rook.png";
+    public static final String wImage = "src/main/resources/XXLChess/w-rook.png";
+}
+
+
+    public void setup() {
+        frameRate(FPS);
+        noStroke();
+        registerMethod("mouseClicked", this);
+        
+
+        PImage wCamel = loadImage(Camel.wImage);
+        wCamel.resize(48, 48);
+        this.pieces.put('c', wCamel);
+        PImage bCamel = loadImage(Camel.bImage);
+        bCamel.resize(48, 48);
+        this.pieces.put('C', bCamel);
+        PImage wRook = loadImage(Rook.wImage);
+        wRook.resize(48, 48);
+        this.pieces.put('r', wRook);
+        PImage bRook = loadImage(Rook.bImage);
+        bRook.resize(48, 48);
+        this.pieces.put('R', bRook);
+        PImage wAmazon = loadImage(Amazon.wImage);
+        wAmazon.resize(48, 48);
+        this.pieces.put('a', wAmazon);
+        PImage bAmazon = loadImage(Amazon.bImage);
+        bAmazon.resize(48, 48);
+        this.pieces.put('A', bAmazon);
+        PImage wArchbishop = loadImage(Archbishop.wImage);
+        wArchbishop.resize(48, 48);
+        this.pieces.put('h', wArchbishop);
+        PImage bArchbishop = loadImage(Archbishop.bImage);
+        bArchbishop.resize(48, 48);
+        this.pieces.put('H', bArchbishop);
+        PImage wBishop = loadImage(Bishop.wImage);
+        wBishop.resize(48, 48);
+        this.pieces.put('b', wBishop);
+        PImage bBishop = loadImage(Bishop.bImage);
+        bBishop.resize(48, 48);
+        this.pieces.put('B', bBishop);
+        PImage wChancellor = loadImage(Chancellor.wImage);
+        wChancellor.resize(48, 48);
+        this.pieces.put('e', wChancellor);
+        PImage bChancellor = loadImage(Chancellor.bImage);
+        bChancellor.resize(48, 48);
+        this.pieces.put('E', bChancellor);
+        PImage wKing = loadImage(King.wImage);
+        wKing.resize(48, 48);
+        this.pieces.put('k', wKing);
+        PImage bKing = loadImage(King.bImage);
+        bKing.resize(48, 48);
+        this.pieces.put('K', bKing);
+        PImage wKnight = loadImage(Knight.wImage);
+        wKnight.resize(48, 48);
+        this.pieces.put('n', wKnight);
+        PImage bKnight = loadImage(Knight.bImage);
+        bKnight.resize(48, 48);
+        this.pieces.put('N', bKnight);
+        PImage wGuard = loadImage(Guard.wImage);
+        wGuard.resize(48, 48);
+        this.pieces.put('g', wGuard);
+        PImage bGuard = loadImage(Guard.bImage);
+        bGuard.resize(48, 48);
+        this.pieces.put('G', bGuard);
+        PImage wPawn = loadImage(Pawn.wImage);
+        wPawn.resize(48, 48);
+        this.pieces.put('p', wPawn);
+        PImage bPawn = loadImage(Pawn.bImage);
+        wPawn.resize(48, 48);
+        this.pieces.put('P', bPawn);
+        PImage wQueen = loadImage(Queen.wImage);
+        wQueen.resize(48, 48);
+        this.pieces.put('q', wQueen);
+        PImage bQueen = loadImage(Queen.bImage);
+        bQueen.resize(48, 48);
+        this.pieces.put('Q', bQueen);
+
+        String[] lines = loadStrings("level1.txt");
+        for (int i = 0; i < lines.length; i++) {
+          String line = lines[i];
+          for (int j = 0; j < line.length(); j++) {
+            this.board[i][j] = line.charAt(j);
+          }
+        }
+        
+        drawBoard();
+        
+
+
+		// load config
+        JSONObject config = loadJSONObject(new File(this.configPath));
+        JSONObject time = config.getJSONObject("time_controls");
+        JSONObject playerTime = time.getJSONObject("player").getJSONObject("seconds");
+        JSONObject cpuTime = time.getJSONObject("cpu").getJSONObject("seconds");
+        JSONObject playerIncrement = time.getJSONObject("player").getJSONObject("increment");
+        JSONObject cpuIncrement = time.getJSONObject("cpu").getJSONObject("increment");
+
+        
+    }
+    
+
+
+
+    /**
+     * Receive key pressed signal from the keyboard.
+    */
+    public void keyPressed(KeyEvent e){
+        if(e.getKeyChar() == 'r'){
+            setup();
+        }
+
+    }
+    
+    /**
+     * Receive key released signal from the keyboard.
+    */
+
+    public void keyReleased(){
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+      int x = e.getX();
+      int y = e.getY();
+      int row = (int) (y / CELLSIZE);
+      int col = (int) (x / CELLSIZE);
+        
+      if(col <= 14){
+        if(!pieceSelected){
+          if(this.board[row][col] != ' '){
+            this.rowChosen = row;
+            this.colChosen = col;
+            this.pieceSelected = true;
+          }
+        }else{
+          if(this.board[row][col] == ' '){
+            movePiece(rowChosen, colChosen, row, col);
+            this.rowChosen = -1;
+            this.colChosen = -1;
+            //draw();
+            pieceSelected = false;
+          }
+          
+        }
+      }  
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        
+    }
+
+    /**
+     * Draw all elements in the game by current frame. 
+    */
+    public void draw() {
+      background(0);
+      drawBoard();
+      drawPieces();
+    }
+    
+	
+	// Add any additional methods or attributes you want. Please put classes in different files.
+    public void movePiece(int startX, int startY, int endX, int endY){
+      this.board[endX][endY] = this.board[startX][startY];;
+      this.board[startX][startY] = ' ';
+    }
+
+    public void drawBoard() {
+      for(int row = 0; row < 14; row++){
+        for(int col = 0; col < 14; col++){
+          if((row + col) % 2 == 0){
+            fill(255, 228, 181);
+          }else{
+            fill(205, 133, 63);
+          }
+
+          rect(col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);
+        }
+      }
+    }
+
+    public void drawPieces() {
+      for(int row = 0; row < 14; row++){
+        for(int col = 0; col < 14; col++){
+          char piece = this.board[row][col];
+          if (piece != ' ') {
+            PImage img = pieces.get(piece);
+            image(img, col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);
+          }
+        }
+      }
+    }
+
+
+    public static void main(String[] args) {
+        PApplet.main("XXLChess.App");
+    }
+
+    public void drawValidMove(){
+      if(pieceSelected){
+        Piece p = pieceCode.get(board[rowChosen][colChosen]);
+        int[][] vm = p.validMove(rowChosen, colChosen);
+        if(p == WhitePawn){
+          if(colChosen + 1 < 14){
+            if(board[rowChosen + 1][colChosen + 1] != ' ' && Character.isUpperCase(board[rowChosen + 1][colChosen + 1])){
+              vm[rowChosen + 1][colChosen + 1] = 1;
+            }
+          }
+          if(colChosen - 1 >= 0){
+            if(board[rowChosen + 1][colChosen - 1] != ' ' && Character.isUpperCase(board[rowChosen + 1][colChosen - 1])){
+              vm[rowChosen + 1][colChosen + 1] = 1;
+            }
+          }
+          if(rowChosen == 12){
+            vm[rowChosen + 2][colChosen] = 1;
+          }
+        }
+        if(p == BlackPawn){
+          if(colChosen + 1 < 14){
+            if(board[rowChosen - 1][colChosen + 1] != ' ' && Character.isLowerCase(board[rowChosen - 1][colChosen + 1])){
+              vm[rowChosen + 1][colChosen + 1] = 1;
+            }
+          }
+          if(colChosen - 1 >= 0){
+            if(board[rowChosen - 1][colChosen - 1] != ' ' && Character.isLowerCase(board[rowChosen - 1][colChosen - 1])){
+              vm[rowChosen + 1][colChosen + 1] = 1;
+            }
+          }
+          if(rowChosen == 1){
+            vm[rowChosen + 2][colChosen] = 1;
+          }
+        }
+
+        for(int row = 0; row < 14; row++){
+          for(int col = 0; col < 14; col++){
+
+            if(vm[row][col] == 1){
+              if((row + col) % 2 == 0){
+                fill(214, 237, 245);
+                rect(col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);
+              }else{
+                fill(136, 200, 221);
+                rect(col * CELLSIZE, row * CELLSIZE, CELLSIZE, CELLSIZE);
+              }
+
+              
+            }  
+          }
+        }
+      }
+    }
+
+              if(row < rowChosen && col < colChosen){
+                for(int backRow = row; backRow >= 0; backRow--){
+                  for(int backCol = col; backCol >= 0; backCol--){
+                    vm[backRow][backCol] = 0;
+                  }
+                }
+                if(isEnemy(board[rowChosen][colChosen], board[row][col])){
+                  vm[row][col] = 1;
+                }
+              }else if(row < rowChosen && col > colChosen){
+                for(int backRow = row; backRow >= 0; backRow--){
+                  for(int nextCol = 0; nextCol < 14 - col; nextCol++){
+                    vm[backRow][col + nextCol] = 0;
+                  }
+                }
+                if(isEnemy(board[rowChosen][colChosen], board[row][col])){
+                  vm[row][col] = 1;
+                }
+              }else if(row > rowChosen && col > colChosen){
+                for(int nextRow = 0; nextRow < 14 - row; nextRow++){
+                  for(int nextCol = 0; nextCol < 14 - col; nextCol++){
+                    vm[row + nextRow][col + nextCol] = 0;
+                  }
+                }
+                if(isEnemy(board[rowChosen][colChosen], board[row][col])){
+                  vm[row][col] = 1;
+                }
+              }else if(row > rowChosen && col < colChosen){
+                for(int nextRow = 0; nextRow < 14 - row; nextRow++){
+                  for(int backCol = col; backCol >= 0; backCol--){
+                    vm[row + nextRow][backCol] = 0;
+                  }
+                }
+                if(isEnemy(board[rowChosen][colChosen], board[row][col])){
+                  vm[row][col] = 1;
+                }
+              }
+
+
+if(row - rowChosen == colChosen - col){
+                if(row < rowChosen && col > colChosen){
+                  for(int backRow = row; backRow >= 0; backRow--){
+                    for(int nextCol = 0; nextCol < 14 - col; nextCol++){
+                      vm[backRow][col + nextCol] = 0;
+                    }
+                  }
+                  if(isEnemy(board[rowChosen][colChosen], board[row][col])){
+                    vm[row][col] = 1;
+                  }
+                }else if(row > rowChosen && col < colChosen){
+                  for(int nextRow = 0; nextRow < 14 - row; nextRow++){
+                    for(int backCol = col; backCol >= 0; backCol--){
+                      vm[row + nextRow][backCol] = 0;
+                    }
+                  }
+                  if(isEnemy(board[rowChosen][colChosen], board[row][col])){
+                    vm[row][col] = 1;
+                  }
+                }
+              }
+
+      //for white king
+      if(board[rowChosen][colChosen] == 'k'){
+        if(!wKingMoved && !wLRookMoved){
+          if(board[rowChosen][colChosen - 2] == ' ' && board[rowChosen][colChosen - 1] == ' '){
+            vm[rowChosen][colChosen - 2] = 1;
+          }
+        }else if(!wKingMoved && !wRRookMoved){
+          if(board[rowChosen][colChosen + 2] == ' ' && board[rowChosen][colChosen + 1] == ' '){
+            vm[rowChosen][colChosen + 2] = 1;
+          }
+        }
+      }
+
+      //for black king
+      if(board[rowChosen][colChosen] == 'K'){
+        if(!bKingMoved && !bLRookMoved){
+          if(board[rowChosen][colChosen + 2] == ' ' && board[rowChosen][colChosen + 1] == ' '){
+            vm[rowChosen][colChosen + 2] = 1;
+          }
+        }else if(!bKingMoved && !bRRookMoved){
+          if(board[rowChosen][colChosen - 2] == ' ' && board[rowChosen][colChosen - 1] == ' '){
+            vm[rowChosen][colChosen - 2] = 1;
+          }
+        }
+      }
+
+if(p == Bishop || p == Archbishop || p == Amazon || p == Queen){
+          if(rowChosen + 2 < 14 && colChosen + 2 < 14){
+            if(board[rowChosen + 1][colChosen + 1] == ' '){
+              if(board[rowChosen + 2][colChosen + 2] == ' '){
+                vm[rowChosen + 2][colChosen + 2] = 1;
+              }else if(isEnemy(board[rowChosen][colChosen], board[rowChosen + 2][colChosen + 2])){
+                vm[rowChosen + 2][colChosen + 2] = 1;
+                for(int i = 3; rowChosen + i < 14; i++){
+                  for(int j = 3; colChosen + j < 14; j++){
+                    vm[rowChosen + i][colChosen + j] = 0;
+                  }
+                }
+              }else{
+                for(int i = 2; rowChosen + i < 14; i++){
+                  for(int j = 2; colChosen + j < 14; j++){
+                    vm[rowChosen + i][colChosen + j] = 0;
+                  }
+                }
+              }
+              
+            }
+            
+          }
+          if(rowChosen - 2 >= 0 && colChosen + 2 < 14){
+            if(board[rowChosen - 1][colChosen + 1] == ' '){
+              if(board[rowChosen - 2][colChosen + 2] == ' '){
+                vm[rowChosen - 2][colChosen + 2] = 1;
+              }else if(isEnemy(board[rowChosen][colChosen], board[rowChosen - 2][colChosen + 2])){
+                vm[rowChosen - 2][colChosen + 2] = 1;
+                for(int i = 3; rowChosen - i >= 0; i++){
+                  for(int j = 3; colChosen + j < 14; j++){
+                    vm[rowChosen - i][colChosen + j] = 0;
+                  }
+                }
+              }else{
+                for(int i = 2; rowChosen - i >= 0; i++){
+                  for(int j = 2; colChosen + j < 14; j++){
+                    vm[rowChosen - i][colChosen + j] = 0;
+                  }
+                }
+              }
+              
+            }
+          }
+          if(rowChosen + 2 < 14 && colChosen - 2 >= 0){
+            if(board[rowChosen + 1][colChosen - 1] == ' '){
+              if(board[rowChosen + 2][colChosen - 2] == ' '){
+                vm[rowChosen + 2][colChosen - 2] = 1;
+              }else if(isEnemy(board[rowChosen][colChosen], board[rowChosen + 2][colChosen - 2])){
+                vm[rowChosen + 2][colChosen - 2] = 1;
+                for(int i = 3; rowChosen + i < 14; i++){
+                  for(int j = 3; colChosen - j >= 0; j++){
+                    vm[rowChosen + i][colChosen - j] = 0;
+                  }
+                }
+              }else{
+                for(int i = 2; rowChosen + i < 14; i++){
+                  for(int j = 2; colChosen - j >= 0; j++){
+                    vm[rowChosen + i][colChosen - j] = 0;
+                  }
+                }
+              }
+              
+            }
+          }
+          if(rowChosen - 2 >= 0 && colChosen - 2 >= 0){
+            if(board[rowChosen - 1][colChosen - 1] == ' '){
+              if(board[rowChosen - 2][colChosen - 2] == ' '){
+                vm[rowChosen - 2][colChosen - 2] = 1;
+              }else if(isEnemy(board[rowChosen][colChosen], board[rowChosen - 2][colChosen - 2])){
+                vm[rowChosen - 2][colChosen - 2] = 1;
+                for(int i = 3; rowChosen - i >= 0; i++){
+                  for(int j = 3; colChosen - j >= 0; j++){
+                    vm[rowChosen - i][colChosen - j] = 0;
+                  }
+                }
+              }else{
+                for(int i = 2; rowChosen - i >= 0; i++){
+                  for(int j = 2; colChosen - j >= 0; j++){
+                    vm[rowChosen - i][colChosen - j] = 0;
+                  }
+                }
+              }
+              
+            }
+          }
+        }
+
+        //there was a bug that if there is a piece next to the 2nd square of bishop path, the path will be invalid
+        if(p == Bishop || p == Archbishop || p == Amazon || p == Queen){
+          if(rowChosen + 2 < 14 && colChosen + 2 < 14){
+            if(board[rowChosen + 2][colChosen + 2] == ' ' && board[rowChosen + 1][colChosen + 1] == ' '){
+              vm[rowChosen + 2][colChosen + 2] = 1;
+            }
+          }
+          if(rowChosen - 2 >= 0 && colChosen + 2 < 14){
+            if(board[rowChosen - 1][colChosen + 1] == ' '){
+              vm[rowChosen - 2][colChosen + 2] = 1;
+            }
+          }
+          if(rowChosen + 2 < 14 && colChosen - 2 >= 0){
+            if(board[rowChosen + 2][colChosen - 2] == ' ' && board[rowChosen + 1][colChosen - 1] == ' '){
+              vm[rowChosen + 2][colChosen - 2] = 1;
+            }
+          }
+          if(rowChosen - 2 >= 0 && colChosen - 2 >= 0){
+            if(board[rowChosen - 2][colChosen - 2] == ' ' && board[rowChosen - 1][colChosen - 1] == ' '){
+              vm[rowChosen - 2][colChosen - 2] = 1;
+            }
+          }
+        }
